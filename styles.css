@@ -206,6 +206,14 @@ html.pf-modal-open {
   width: 100%;
 }
 
+.pf-kebab-menu .pf-v6-c-menu__item.pf-m-danger {
+  color: var(--pf-t--global--text--color--status--danger--default, #c9190b);
+}
+
+.pf-kebab-menu .pf-v6-c-menu__item.pf-m-danger:hover {
+  color: var(--pf-t--global--text--color--status--danger--default, #c9190b);
+}
+
 .pf-filter-menu .pf-v6-c-divider,
 .pf-kebab-menu .pf-v6-c-divider {
   margin-block: var(--pf-t--global--spacer--xs);

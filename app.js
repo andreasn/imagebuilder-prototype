@@ -1023,7 +1023,7 @@ function bindTableEvents() {
       const menu = document.createElement("div");
       menu.className = "pf-kebab-menu pf-v6-c-menu";
       menu.innerHTML = `<ul class="pf-v6-c-menu__list">
-        <li role="none"><button type="button" class="pf-v6-c-menu__item" role="menuitem">Edit</button></li>
+        <li role="none"><button type="button" class="pf-v6-c-menu__item" role="menuitem" data-kebab-action="edit">Edit</button></li>
         <li role="none"><button type="button" class="pf-v6-c-menu__item" role="menuitem">Duplicate</button></li>
         <li role="none"><button type="button" class="pf-v6-c-menu__item" role="menuitem">Rebuild</button></li>
         <li class="pf-v6-c-divider" role="separator"></li>
@@ -1037,7 +1037,11 @@ function bindTableEvents() {
         showToast(`Delete ${id} (prototype)`);
         closeAllMenus();
       });
-      menu.querySelectorAll(".pf-v6-c-menu__item:not(.pf-m-danger)").forEach((b) => {
+      menu.querySelector('[data-kebab-action="edit"]')?.addEventListener("click", () => {
+        openModal("build-image");
+        closeAllMenus();
+      });
+      menu.querySelectorAll(".pf-v6-c-menu__item:not(.pf-m-danger):not([data-kebab-action='edit'])").forEach((b) => {
         b.addEventListener("click", () => {
           showToast(`${b.textContent} — ${id} (prototype)`);
           closeAllMenus();
