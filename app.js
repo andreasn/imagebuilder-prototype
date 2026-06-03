@@ -873,7 +873,7 @@ function renderBuildInfo(img) {
         ${dl("Shared with", `<a href="#" class="table-expanded-link">${info.sharedWith} <i class="fas fa-external-link-alt" aria-hidden="true"></i></a>`)}
         ${dl(info.imageLabel, info.imageValue)}
         ${dl("Region", info.region)}
-        ${dl("Status", renderStatusBadge(img.status, null, { img }))}
+        ${dl("Status", renderStatusBadge(img.status, null, { forFilter: true }))}
       </dl>
     </div>`;
 }
@@ -1327,26 +1327,6 @@ function init() {
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") closeModals();
   });
-
-  $("#toggle-empty").addEventListener("click", () => {
-    state.emptyMode = !state.emptyMode;
-    state.page = 1;
-    const desc = $("#page-desc");
-    if (state.emptyMode) {
-      desc.textContent =
-        "Build, customize, and deploy RHEL images for public cloud, private cloud, and on-premise environments.";
-    } else {
-      desc.textContent =
-        "Build, customize, and deploy RHEL images for public cloud, private cloud, and on-premise environments. You can manage your images by duplicating, rebuilding, or editing existing configurations. Download your finished builds or launch them directly as deployment-ready systems.";
-    }
-    render();
-  });
-
-  const demoImg = state.images[0];
-  $("#show-launch-aws").addEventListener("click", () => openLaunchModal(demoImg, "aws"));
-  $("#show-launch-azure").addEventListener("click", () => openLaunchModal(demoImg, "azure"));
-  $("#show-launch-gcp").addEventListener("click", () => openLaunchModal(demoImg, "gcp"));
-  $("#show-launch-oci").addEventListener("click", () => openLaunchModal(state.images.find((i) => i.target === "Oracle") || demoImg, "oci"));
 
   $$(".btn-copy").forEach((btn) => {
     btn.addEventListener("click", () => {

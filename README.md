@@ -29,8 +29,6 @@ This copies `patternfly.min.css`, `patternfly-addons.css`, and the `assets/` fol
 - **Modals** — `pf-v6-c-modal-box` (Download RHEL, Import, cloud launch)
 - **Cards & popover** — ISO download cards, details popover
 
-Use the bottom **Prototype controls** bar to toggle empty state or open cloud launch modals.
-
 ## Files
 
 | File | Purpose |

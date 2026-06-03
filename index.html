@@ -271,54 +271,38 @@
   </div>
   </div>
 
-  <div class="pf-v6-c-popover pf-m-top hidden" id="details-popover" role="dialog" aria-label="Image details">
-    <div class="pf-v6-c-popover__arrow"></div>
-    <div class="pf-v6-c-popover__content">
-      <div class="pf-v6-c-popover__close">
-        <button type="button" class="pf-v6-c-button pf-m-plain" id="details-close" aria-label="Close">
-          <span class="pf-v6-c-button__icon"><i class="fas fa-times" aria-hidden="true"></i></span>
-        </button>
-      </div>
-      <div class="pf-v6-c-popover__header">
-        <div class="pf-v6-c-popover__title">Details</div>
-      </div>
-      <div class="pf-v6-c-popover__body">
-        <dl class="pf-v6-c-description-list pf-m-horizontal pf-m-2-col">
-          <div class="pf-v6-c-description-list__group">
-            <dt class="pf-v6-c-description-list__term">File name</dt>
-            <dd class="pf-v6-c-description-list__description">rhel-10.0-x86_64-dvd.iso</dd>
-          </div>
-          <div class="pf-v6-c-description-list__group">
-            <dt class="pf-v6-c-description-list__term">File size</dt>
-            <dd class="pf-v6-c-description-list__description">7.88 GB</dd>
-          </div>
-          <div class="pf-v6-c-description-list__group">
-            <dt class="pf-v6-c-description-list__term">Last updated</dt>
-            <dd class="pf-v6-c-description-list__description">05 Mar 2025</dd>
-          </div>
-          <div class="pf-v6-c-description-list__group">
-            <dt class="pf-v6-c-description-list__term">SHA-256-checksum</dt>
-            <dd class="pf-v6-c-description-list__description">
-              <div class="pf-v6-l-flex pf-m-gap-sm pf-m-align-items-center">
-                <code class="pf-v6-u-font-size-sm checksum-text">edce2dd6f8e1d1b2ff0b204f89a3c7e5d1f2a8b9c0d3e4f5a6b7c8d9e0f1a2b3</code>
-                <button type="button" class="pf-v6-c-button pf-m-plain btn-copy" data-copy="edce2dd6f8e1d1b2ff0b204f89a3c7e5d1f2a8b9c0d3e4f5a6b7c8d9e0f1a2b3" aria-label="Copy checksum">
-                  <span class="pf-v6-c-button__icon"><i class="fas fa-copy" aria-hidden="true"></i></span>
-                </button>
-              </div>
-            </dd>
-          </div>
-        </dl>
-      </div>
+  <div class="image-details-panel hidden" id="details-popover" role="dialog" aria-label="Image details">
+    <div class="image-details-panel__header">
+      <h2 class="image-details-panel__title">Details</h2>
+      <button type="button" class="pf-v6-c-button pf-m-plain" id="details-close" aria-label="Close">
+        <span class="pf-v6-c-button__icon"><i class="fas fa-times" aria-hidden="true"></i></span>
+      </button>
     </div>
-  </div>
-
-  <div class="demo-bar pf-v6-l-flex pf-m-gap-sm pf-m-align-items-center" id="demo-bar">
-    <span class="pf-v6-u-font-size-sm">Prototype controls:</span>
-    <button type="button" class="pf-v6-c-button pf-m-secondary pf-m-small" id="toggle-empty">Toggle empty state</button>
-    <button type="button" class="pf-v6-c-button pf-m-secondary pf-m-small" id="show-launch-aws">AWS launch</button>
-    <button type="button" class="pf-v6-c-button pf-m-secondary pf-m-small" id="show-launch-azure">Azure launch</button>
-    <button type="button" class="pf-v6-c-button pf-m-secondary pf-m-small" id="show-launch-gcp">GCP launch</button>
-    <button type="button" class="pf-v6-c-button pf-m-secondary pf-m-small" id="show-launch-oci">OCI launch</button>
+    <ul class="pf-v6-c-list pf-m-plain image-details-panel__list">
+      <li class="pf-v6-c-list__item">
+        <span class="image-details-panel__term">File name</span>
+        <span class="image-details-panel__value">rhel-10.0-x86_64-dvd.iso</span>
+      </li>
+      <li class="pf-v6-c-list__item">
+        <span class="image-details-panel__term">File size</span>
+        <span class="image-details-panel__value">7.88 GB</span>
+      </li>
+      <li class="pf-v6-c-list__item">
+        <span class="image-details-panel__term">Last updated</span>
+        <span class="image-details-panel__value">05 Mar 2025</span>
+      </li>
+      <li class="pf-v6-c-list__item">
+        <span class="image-details-panel__term">SHA-256-checksum</span>
+        <span class="image-details-panel__value">
+          <span class="pf-v6-l-flex pf-m-gap-sm pf-m-align-items-flex-start">
+            <code class="pf-v6-u-font-size-sm checksum-text">edce2dd6f8e1d1b2ff0b204f89a3c7e5d1f2a8b9c0d3e4f5a6b7c8d9e0f1a2b3</code>
+            <button type="button" class="pf-v6-c-button pf-m-plain btn-copy" data-copy="edce2dd6f8e1d1b2ff0b204f89a3c7e5d1f2a8b9c0d3e4f5a6b7c8d9e0f1a2b3" aria-label="Copy checksum">
+              <span class="pf-v6-c-button__icon"><i class="fas fa-copy" aria-hidden="true"></i></span>
+            </button>
+          </span>
+        </span>
+      </li>
+    </ul>
   </div>
 
   <div class="pf-v6-c-alert pf-m-success pf-m-inline hidden toast-alert" id="toast" role="status">
