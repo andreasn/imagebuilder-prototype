@@ -203,11 +203,11 @@
     <div class="pf-v6-c-modal-box__body">
       <p class="pf-v6-c-content pf-v6-u-mb-md">Directly build and download Red Hat Enterprise Linux (RHEL) ISOs and images tailored for your environment.</p>
       <p class="pf-v6-c-content pf-v6-u-mb-md">Use <strong>Build latest</strong> to begin customizing your image with Image Builder, or select <strong>Download blueprint</strong> to quickly access the latest stable version of the image. For more information, visit <a href="https://developers.redhat.com" target="_blank" rel="noopener">Red Hat Developer <i class="fas fa-external-link-alt pf-v6-u-ml-xs" aria-hidden="true"></i></a></p>
-      <h2 class="pf-v6-c-title pf-m-md pf-v6-u-mt-lg">Network install images</h2>
+      <h2 class="pf-v6-c-title pf-m-md pf-v6-u-mt-lg download-rhel-section-title">Network install images</h2>
       <div class="pf-v6-l-gallery pf-m-gutter iso-gallery" id="network-images"></div>
-      <h2 class="pf-v6-c-title pf-m-md pf-v6-u-mt-lg">Offline install images</h2>
+      <h2 class="pf-v6-c-title pf-m-md pf-v6-u-mt-lg download-rhel-section-title">Offline install images</h2>
       <div class="pf-v6-l-gallery pf-m-gutter iso-gallery" id="offline-dvd-images"></div>
-      <h2 class="pf-v6-c-title pf-m-md pf-v6-u-mt-lg">KVM guest images</h2>
+      <h2 class="pf-v6-c-title pf-m-md pf-v6-u-mt-lg download-rhel-section-title">KVM guest images</h2>
       <div class="pf-v6-l-gallery pf-m-gutter iso-gallery" id="kvm-images"></div>
     </div>
   </div>
@@ -278,10 +278,11 @@
         <span class="pf-v6-c-button__icon"><i class="fas fa-times" aria-hidden="true"></i></span>
       </button>
     </div>
+    <div class="image-details-panel__body">
     <ul class="pf-v6-c-list pf-m-plain image-details-panel__list">
       <li class="pf-v6-c-list__item">
         <span class="image-details-panel__term">File name</span>
-        <span class="image-details-panel__value">rhel-10.0-x86_64-dvd.iso</span>
+        <span class="image-details-panel__value" id="details-file-name">—</span>
       </li>
       <li class="pf-v6-c-list__item">
         <span class="image-details-panel__term">File size</span>
@@ -294,7 +295,7 @@
       <li class="pf-v6-c-list__item">
         <span class="image-details-panel__term">SHA-256-checksum</span>
         <span class="image-details-panel__value">
-          <span class="pf-v6-l-flex pf-m-gap-sm pf-m-align-items-flex-start">
+          <span class="image-details-panel__checksum">
             <code class="pf-v6-u-font-size-sm checksum-text">edce2dd6f8e1d1b2ff0b204f89a3c7e5d1f2a8b9c0d3e4f5a6b7c8d9e0f1a2b3</code>
             <button type="button" class="pf-v6-c-button pf-m-plain btn-copy" data-copy="edce2dd6f8e1d1b2ff0b204f89a3c7e5d1f2a8b9c0d3e4f5a6b7c8d9e0f1a2b3" aria-label="Copy checksum">
               <span class="pf-v6-c-button__icon"><i class="fas fa-copy" aria-hidden="true"></i></span>
@@ -303,6 +304,7 @@
         </span>
       </li>
     </ul>
+    </div>
   </div>
 
   <div class="pf-v6-c-alert pf-m-success pf-m-inline hidden toast-alert" id="toast" role="status">

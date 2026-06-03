@@ -179,6 +179,21 @@ const ISO_CARDS = {
   ],
 };
 
+/** RHEL download file name for each ISO card title (Build and download RHEL). */
+function getIsoFileName(title) {
+  const versionMatch = title.match(/Linux (\d+(?:\.\d+)?)/);
+  const version = versionMatch
+    ? versionMatch[1].includes(".")
+      ? versionMatch[1]
+      : `${versionMatch[1]}.0`
+    : "10.0";
+
+  if (title.includes("Boot ISO")) return `rhel-${version}-x86_64-boot.iso`;
+  if (title.includes("Binary DVD")) return `rhel-${version}-x86_64-dvd.iso`;
+  if (title.includes("KVM")) return `rhel-${version}-x86_64-kvm.qcow2`;
+  return `rhel-${version}-x86_64.iso`;
+}
+
 const FILTER_CATEGORIES = [
   {
     id: "name",
@@ -1055,8 +1070,9 @@ function updateSelectAll() {
 function renderIsoCards(containerId, titles) {
   const container = $(containerId);
   container.innerHTML = titles
-    .map(
-      (title) => `
+    .map((title) => {
+      const fileName = getIsoFileName(title);
+      return `
     <div class="pf-v6-l-gallery__item">
       <div class="pf-v6-c-card pf-m-full-height">
         <div class="pf-v6-c-card__header">
@@ -1064,7 +1080,7 @@ function renderIsoCards(containerId, titles) {
             <h3 class="pf-v6-c-card__title-text">${title}</h3>
           </div>
           <div class="pf-v6-c-card__actions">
-            <button type="button" class="pf-v6-c-button pf-m-plain pf-m-no-padding" data-details aria-label="Details for ${title}">
+            <button type="button" class="pf-v6-c-button pf-m-plain pf-m-no-padding" data-details data-file-name="${escapeAttr(fileName)}" aria-label="Details for ${escapeAttr(title)}">
               <span class="pf-v6-c-button__icon"><i class="fas fa-info-circle" aria-hidden="true"></i></span>
             </button>
           </div>
@@ -1078,13 +1094,18 @@ function renderIsoCards(containerId, titles) {
           </div>
         </div>
       </div>
-    </div>`
-    )
+    </div>`;
+    })
     .join("");
 
   container.querySelectorAll("[data-details]").forEach((btn) => {
     btn.addEventListener("click", (e) => {
       e.stopPropagation();
+      const fileNameEl = $("#details-file-name");
+      const cardTitle = btn.closest(".pf-v6-c-card")?.querySelector(".pf-v6-c-card__title-text")?.textContent?.trim();
+      const fileName =
+        btn.getAttribute("data-file-name") || (cardTitle ? getIsoFileName(cardTitle) : "");
+      if (fileNameEl) fileNameEl.textContent = fileName || "—";
       const popover = $("#details-popover");
       const rect = btn.getBoundingClientRect();
       popover.style.top = `${rect.top}px`;
