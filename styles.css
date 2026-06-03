@@ -1,0 +1,819 @@
+/* PatternFly 6 prototype overrides — see https://www.patternfly.org/ */
+
+.hidden {
+  display: none !important;
+}
+
+/* Masthead: brand left, settings / help / user on the right */
+.pf-v6-c-masthead.pf-v6-c-page__header .pf-v6-c-masthead__content {
+  margin-inline-start: auto;
+}
+
+.pf-v6-c-masthead.pf-v6-c-page__header .pf-v6-c-masthead__content .pf-v6-c-toolbar__content {
+  justify-content: flex-end;
+}
+
+/* Masthead utilities — colors and shapes from Untitled.pdf */
+.masthead-tools {
+  --masthead-util-bg: #f5f5f5;
+  --masthead-util-bg-hover: #ededed;
+  --masthead-util-border: #d2d2d2;
+  --masthead-util-icon: #6a6e73;
+  --masthead-util-text: #151515;
+  --masthead-util-radius: 4px;
+  --masthead-util-size: 2.25rem;
+
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.masthead-util-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  margin: 0;
+  padding: 0;
+  min-height: var(--masthead-util-size);
+  border: 1px solid var(--masthead-util-border);
+  background: var(--masthead-util-bg);
+  color: var(--masthead-util-text);
+  border-radius: var(--masthead-util-radius);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1;
+  transition: background-color 0.15s ease;
+}
+
+.masthead-util-btn:hover {
+  background: var(--masthead-util-bg-hover);
+}
+
+.masthead-util-btn:focus-visible {
+  outline: 2px solid #0066cc;
+  outline-offset: 2px;
+}
+
+.masthead-util-btn--icon {
+  width: var(--masthead-util-size);
+  height: var(--masthead-util-size);
+}
+
+.masthead-util-btn--icon i {
+  font-size: 1rem;
+  color: var(--masthead-util-icon);
+}
+
+.masthead-util-btn--user {
+  height: var(--masthead-util-size);
+  padding-inline: 0.25rem 0.5rem;
+}
+
+.masthead-user-avatar {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #c4c4c4, #8a8d90);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.masthead-user-avatar i {
+  font-size: 0.625rem;
+  color: #fff;
+}
+
+.masthead-user-name {
+  font-weight: 400;
+  color: var(--masthead-util-text);
+  white-space: nowrap;
+}
+
+.masthead-user-caret {
+  font-size: 0.75rem;
+  color: var(--masthead-util-icon);
+  margin-inline-start: 0.125rem;
+}
+
+/* Modal stack: modals live inside .pf-v6-c-backdrop */
+#modal-backdrop:not(.hidden) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#modal-backdrop .pf-v6-c-modal-box:not(.hidden) {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+  overflow: hidden;
+}
+
+#modal-backdrop .pf-v6-c-modal-box__body {
+  overflow: auto;
+}
+
+#modal-launch .pf-v6-c-modal-box__body ol {
+  margin: 0;
+  padding-inline-start: var(--pf-t--global--spacer--lg);
+}
+
+#modal-launch .pf-v6-c-modal-box__body li + li {
+  margin-block-start: var(--pf-t--global--spacer--md);
+}
+
+#modal-launch .pf-v6-c-modal-box__body li ul {
+  margin-block-start: var(--pf-t--global--spacer--sm);
+  padding-inline-start: var(--pf-t--global--spacer--lg);
+}
+
+html.pf-modal-open {
+  overflow: hidden;
+}
+
+/* ISO cards in Download RHEL modal */
+.iso-gallery {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.iso-gallery .pf-v6-c-card {
+  height: 100%;
+}
+
+.iso-gallery .pf-v6-c-card__actions {
+  margin-block-start: auto;
+}
+
+/* Filter menus (anchored to toolbar controls) */
+.pf-filter-menu {
+  position: absolute;
+  z-index: var(--pf-t--global--z-index--md);
+  min-width: 16rem;
+  max-width: 22rem;
+  max-height: 24rem;
+  overflow-y: auto;
+  background: var(--pf-t--global--background--color--primary--default);
+  border: var(--pf-t--global--border--width--regular) solid var(--pf-t--global--border--color--default);
+  border-radius: var(--pf-t--global--border--radius--medium);
+  box-shadow: var(--pf-t--global--box-shadow--md);
+}
+
+.pf-filter-dropdown {
+  position: relative;
+}
+
+/* Row action menu — fixed position set in JS to stay in viewport */
+.pf-kebab-menu {
+  position: fixed;
+  z-index: var(--pf-t--global--z-index--xl);
+  min-width: 12rem;
+  max-width: 16rem;
+  max-height: min(24rem, calc(100vh - 1rem));
+  overflow-y: auto;
+  background: var(--pf-t--global--background--color--primary--default);
+  border: var(--pf-t--global--border--width--regular) solid var(--pf-t--global--border--color--default);
+  border-radius: var(--pf-t--global--border--radius--medium);
+  box-shadow: var(--pf-t--global--box-shadow--md);
+}
+
+.pf-kebab-wrap {
+  position: relative;
+}
+
+.pf-filter-menu .pf-v6-c-menu__item,
+.pf-kebab-menu .pf-v6-c-menu__item {
+  width: 100%;
+}
+
+.pf-filter-menu .pf-v6-c-divider,
+.pf-kebab-menu .pf-v6-c-divider {
+  margin-block: var(--pf-t--global--spacer--xs);
+}
+
+.pf-menu-group-label {
+  padding: var(--pf-t--global--spacer--sm) var(--pf-t--global--spacer--md);
+  font-size: var(--pf-t--global--font--size--body--sm);
+  color: var(--pf-t--global--text--color--subtle);
+}
+
+.pf-filter-menu__section .pf-menu-group-label {
+  padding-block-start: var(--pf-t--global--spacer--md);
+  padding-block-end: var(--pf-t--global--spacer--xs);
+  font-size: var(--pf-t--global--font--size--body--default);
+  font-weight: var(--pf-t--global--font--weight--body--bold);
+  color: var(--pf-t--global--text--color--regular);
+}
+
+.pf-filter-menu .pf-v6-c-menu__item.pf-m-selected {
+  background-color: var(--pf-t--global--background--color--secondary--default);
+}
+
+/* Toolbar: filters, bulk actions, and pagination on one row */
+#table-toolbar .pf-v6-c-toolbar__content-section {
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--pf-t--global--spacer--md);
+}
+
+#table-toolbar .image-builder-filters {
+  --ib-filter-border: #d2d2d2;
+  --ib-filter-bg: #ffffff;
+  --ib-filter-active-bg: #bee1f4;
+  --ib-filter-active-border: #0066cc;
+  --ib-filter-radius: 4px;
+  --ib-filter-height: 2.25rem;
+
+  display: inline-flex;
+  align-items: stretch;
+  gap: var(--pf-t--global--spacer--xs);
+}
+
+#table-toolbar .image-builder-filters__category,
+#table-toolbar .image-builder-filters__value {
+  display: flex;
+  align-items: stretch;
+}
+
+#table-toolbar .pf-v6-c-toolbar__item.pf-m-align-right {
+  margin-inline-start: auto;
+}
+
+/* Pagination — match Untitled.pdf (range + per-page caret; top/bottom nav variants) */
+.pagination-control {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 13px;
+  color: #6a6e73;
+}
+
+.pagination-control--bottom {
+  justify-content: flex-end;
+}
+
+.pagination-summary {
+  display: flex;
+  align-items: center;
+  gap: 0.125rem;
+}
+
+.pagination-range {
+  color: #6a6e73;
+  white-space: nowrap;
+}
+
+.pagination-per-page-wrap {
+  position: relative;
+}
+
+.pagination-per-page-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0.125rem 0.25rem;
+  border: none;
+  background: transparent;
+  color: #6a6e73;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.pagination-per-page-toggle:hover {
+  color: #151515;
+}
+
+.pagination-per-page-menu {
+  position: absolute;
+  z-index: var(--pf-t--global--z-index--md);
+  top: calc(100% + 2px);
+  right: 0;
+  min-width: 7rem;
+  margin: 0;
+  padding: 0.25rem 0;
+  list-style: none;
+  background: #fff;
+  border: 1px solid #d2d2d2;
+  border-radius: 4px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+}
+
+.pagination-per-page-option {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 0.375rem 0.75rem;
+  border: none;
+  background: transparent;
+  color: #151515;
+  font: inherit;
+  font-size: 13px;
+  text-align: start;
+  cursor: pointer;
+}
+
+.pagination-per-page-option:hover,
+.pagination-per-page-option.pf-m-selected {
+  background: #f0f0f0;
+}
+
+.pagination-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.pagination-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  margin: 0;
+  padding: 0;
+  border: 1px solid #d2d2d2;
+  background: #fff;
+  border-radius: 4px;
+  color: #151515;
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.pagination-nav-btn:hover:not(:disabled) {
+  background: #f5f5f5;
+}
+
+.pagination-nav-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.pagination-nav-btn--plain {
+  width: auto;
+  height: auto;
+  min-width: 1.25rem;
+  border: none;
+  background: transparent;
+  color: #6a6e73;
+  font-size: 14px;
+}
+
+.pagination-nav-btn--plain:hover:not(:disabled) {
+  background: transparent;
+  color: #151515;
+}
+
+.pagination-page-input {
+  width: 2.5rem;
+  padding: 0.25rem;
+  border: 1px solid #d2d2d2;
+  border-radius: 4px;
+  background: #fff;
+  color: #151515;
+  font: inherit;
+  font-size: 13px;
+  text-align: center;
+  -moz-appearance: textfield;
+}
+
+.pagination-page-input::-webkit-outer-spin-button,
+.pagination-page-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.pagination-page-of {
+  color: #6a6e73;
+  white-space: nowrap;
+}
+
+/* Filter toggles + search — connected control (Untitled.pdf) */
+#table-toolbar .image-builder-filter-toggle.pf-v6-c-menu-toggle {
+  --pf-v6-c-menu-toggle--BackgroundColor: var(--ib-filter-bg);
+  --pf-v6-c-menu-toggle--BorderColor: var(--ib-filter-border);
+  --pf-v6-c-menu-toggle--Color: var(--pf-t--global--text--color--regular);
+
+  min-height: var(--ib-filter-height);
+  justify-content: flex-start;
+  text-align: start;
+  font-size: 0.8125rem;
+  border-radius: var(--ib-filter-radius);
+}
+
+#table-toolbar #unified-filter .image-builder-filter-toggle {
+  gap: var(--pf-t--global--spacer--sm);
+  padding-inline: 0.75rem;
+}
+
+#table-toolbar .pf-value-filter-dropdown .image-builder-filter-toggle {
+  min-width: 14rem;
+  max-width: 20rem;
+  width: 100%;
+  padding-inline: 0.75rem;
+}
+
+#table-toolbar .image-builder-filter-toggle .pf-v6-c-menu-toggle__text {
+  text-align: start;
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#table-toolbar .image-builder-filter-toggle .pf-v6-c-menu-toggle__text.pf-m-placeholder {
+  color: var(--pf-t--global--text--color--subtle);
+}
+
+#table-toolbar .image-builder-filter-toggle .pf-v6-c-menu-toggle__toggle-icon {
+  margin-inline-start: auto;
+  color: var(--pf-t--global--icon--color--subtle);
+}
+
+#table-toolbar .image-builder-filters.pf-m-has-filter-value .image-builder-filter-toggle,
+#table-toolbar .image-builder-filters.pf-m-has-filter-value .filter-value-text .pf-v6-c-text-input-group__main {
+  --pf-v6-c-menu-toggle--BackgroundColor: var(--ib-filter-active-bg);
+  --pf-v6-c-menu-toggle--BorderColor: var(--ib-filter-active-border);
+  background-color: var(--ib-filter-active-bg);
+  border-color: var(--ib-filter-active-border);
+}
+
+#table-toolbar .image-builder-filters.pf-m-category-open #unified-filter .image-builder-filter-toggle,
+#table-toolbar .image-builder-filters.pf-m-value-open .image-builder-filter-toggle {
+  --pf-v6-c-menu-toggle--BorderColor: var(--ib-filter-active-border);
+  border-color: var(--ib-filter-active-border);
+}
+
+.filter-value-text {
+  width: 14rem;
+}
+
+.filter-value-text .pf-v6-c-text-input-group {
+  width: 100%;
+}
+
+.filter-value-text .pf-v6-c-text-input-group__main {
+  min-height: var(--ib-filter-height);
+  background: var(--ib-filter-bg);
+  border: 1px solid var(--ib-filter-border);
+}
+
+.filter-value-text .pf-v6-c-text-input-group__text-input {
+  text-align: start;
+  font-size: 0.8125rem;
+}
+
+.filter-value-text .pf-v6-c-text-input-group__text-input::placeholder {
+  color: var(--pf-t--global--text--color--subtle);
+}
+
+.pf-filter-menu .pf-menu-group-label,
+.pf-filter-menu .pf-v6-c-menu__item {
+  text-align: start;
+}
+
+/* Target environment filter — long option labels */
+.pf-value-filter-dropdown.pf-m-target-value-filter .image-builder-filter-toggle {
+  max-width: 28rem;
+}
+
+.pf-value-filter-dropdown.pf-m-target-value-filter .image-builder-filter-toggle .pf-v6-c-menu-toggle__text {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+.pf-filter-menu.pf-m-target-filter-menu {
+  max-width: min(32rem, calc(100vw - 2rem));
+  width: max-content;
+  min-width: 100%;
+}
+
+.pf-filter-menu.pf-m-target-filter-menu .pf-v6-c-menu__item-text {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+/* Favorited filter — solid yellow / outlined grey stars (Untitled.pdf) */
+.pf-filter-menu .pf-m-favorited-filter-item.pf-v6-c-menu__item {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--pf-t--global--spacer--sm);
+}
+
+.pf-filter-menu .pf-m-favorited-filter-item .pf-v6-c-menu__item-text {
+  flex-grow: 0;
+  white-space: nowrap;
+}
+
+/* Outlined grey (unfavorited) and gold filled (favorited) — table + filter menu */
+.pf-v6-c-button.pf-m-favorite .pf-v6-c-button__icon-favorite i::before,
+.pf-m-favorited-filter-icon.pf-m-unfavorited i::before {
+  color: var(--pf-t--global--background--color--primary--default);
+  -webkit-text-stroke: 1.25px var(--pf-t--global--icon--color--subtle);
+  paint-order: stroke fill;
+}
+
+.pf-v6-c-button.pf-m-favorite.pf-m-favorited .pf-v6-c-button__icon-favorited i::before,
+.pf-m-favorited-filter-icon.pf-m-favorited i::before {
+  color: var(--pf-t--global--color--favorite--default);
+  -webkit-text-stroke: 0;
+}
+
+.pf-filter-menu .pf-m-favorited-filter-item .pf-v6-c-menu__item-icon {
+  width: auto;
+  min-width: 1.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Status filter — outline labels in menu and toggle (Untitled.pdf) */
+.pf-filter-menu.pf-m-status-filter-menu {
+  min-width: 11.5rem;
+}
+
+.pf-filter-menu .pf-m-status-filter-item {
+  padding-block: var(--pf-t--global--spacer--sm);
+}
+
+.pf-filter-menu .pf-m-status-filter-item .pf-v6-c-menu__item-text {
+  display: flex;
+  align-items: center;
+  line-height: 1;
+}
+
+.pf-filter-menu .pf-m-status-filter-item .pf-v6-c-label,
+.pf-value-filter-dropdown .pf-v6-c-menu-toggle__text.pf-m-has-status-label .pf-v6-c-label {
+  --pf-v6-c-label--FontSize: var(--pf-t--global--font--size--body--default);
+  font-size: var(--pf-t--global--font--size--body--default);
+  pointer-events: none;
+}
+
+/* Borderless status chips in filter menu — keep outline colors for contrast */
+.pf-v6-c-label.pf-m-status-filter-label {
+  --pf-v6-c-label--BorderWidth: 0;
+}
+
+.pf-value-filter-dropdown .pf-v6-c-menu-toggle__text.pf-m-has-status-label {
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+}
+
+.pf-value-filter-dropdown .pf-v6-c-menu-toggle__text.pf-m-has-status-label .pf-v6-c-label {
+  max-width: 100%;
+}
+
+/* Table control columns — expand, checkbox, favorite (PatternFly cell modifiers) */
+#images-table col.table-col-control {
+  width: 2.75rem;
+}
+
+#images-table :is(th, td).pf-v6-c-table__toggle,
+#images-table :is(th, td).pf-v6-c-table__check,
+#images-table :is(th, td).pf-v6-c-table__favorite {
+  width: 2.75rem;
+  min-width: 2.75rem;
+  max-width: 2.75rem;
+  padding-inline: var(--pf-t--global--spacer--sm);
+  text-align: center;
+  vertical-align: middle;
+}
+
+#images-table .pf-v6-c-table__check label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  line-height: 1lh;
+  margin-block-end: calc(var(--pf-v6-c-button--PaddingBlockEnd) * -1);
+  margin-block-start: calc(var(--pf-v6-c-button--PaddingBlockStart) * -1);
+}
+
+#images-table .pf-v6-c-table__check input[type="checkbox"] {
+  margin: 0;
+}
+
+/* Match PF toggle button vertical alignment for star button */
+#images-table .pf-v6-c-table__favorite .pf-v6-c-button.pf-m-plain.pf-m-favorite {
+  line-height: 1lh;
+  margin-block-end: calc(var(--pf-v6-c-button--PaddingBlockEnd) * -1);
+  margin-block-start: calc(var(--pf-v6-c-button--PaddingBlockStart) * -1);
+}
+
+/* Disable PF favorite microanimation in the table */
+#images-table .pf-v6-c-table__favorite .pf-v6-c-button.pf-m-favorite.pf-m-favorited .pf-v6-c-button__icon {
+  animation: none;
+}
+
+#images-table .pf-v6-c-table__favorite .pf-v6-c-button__icon-favorite,
+#images-table .pf-v6-c-table__favorite .pf-v6-c-button__icon-favorited {
+  transition: none;
+}
+
+/* Status label tooltips — dark bubble + arrow (Untitled.pdf) */
+#images-table .status-label-tooltip-host {
+  position: relative;
+  display: inline-flex;
+  vertical-align: middle;
+  cursor: default;
+  outline: none;
+}
+
+#images-table .status-label-tooltip-host .status-tooltip {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 6px);
+  transform: translateX(-50%);
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  width: max-content;
+  max-width: 15rem;
+  z-index: var(--pf-t--global--z-index--md);
+  pointer-events: none;
+}
+
+#images-table .status-label-tooltip-host:hover .status-tooltip,
+#images-table .status-label-tooltip-host:focus-within .status-tooltip,
+#images-table .status-label-tooltip-host:focus-visible .status-tooltip {
+  display: flex;
+}
+
+#images-table .status-tooltip__content {
+  padding: 0.5rem 0.75rem;
+  background: #151515;
+  color: #fff;
+  font-size: 0.75rem;
+  line-height: 1.45;
+  font-weight: 400;
+  text-align: center;
+  border-radius: 3px;
+  white-space: normal;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.24);
+}
+
+#images-table .status-tooltip__arrow {
+  flex-shrink: 0;
+  width: 0;
+  height: 0;
+  margin-block-start: -1px;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 8px solid #151515;
+}
+
+#images-table .pf-v6-c-table__td[data-label="Status"],
+#images-table .table-expanded-panel .pf-v6-c-description-list__description {
+  overflow: visible;
+}
+
+#images-table .pf-v6-c-table__action {
+  width: 1%;
+  white-space: nowrap;
+}
+
+/* Table expander: chevron down when open (override PF -180deg on angle-right) */
+#images-table .pf-v6-c-table__toggle .pf-v6-c-button.pf-m-expanded .pf-v6-c-table__toggle-icon {
+  transform: none;
+}
+
+#images-table .pf-v6-c-table__toggle .pf-v6-c-table__toggle-icon {
+  transition: transform 0.15s ease;
+}
+
+/* Expanded row — Untitled.pdf “Expanded row” spec */
+/* PF hides .pf-v6-c-table__expandable-row unless it also has .pf-m-expanded */
+#images-table .pf-v6-c-table__expandable-row.pf-m-expanded {
+  display: table-row;
+}
+
+/* Remove PF left accent bar / gray gutter on expanded rows */
+#images-table .pf-v6-c-table__tbody::after {
+  --pf-v6-c-table__tbody--after--BorderInlineStartWidth: 0;
+  --pf-v6-c-table__tbody--m-expanded--after__tr--BorderInlineStartWidth: 0;
+}
+
+#images-table .pf-v6-c-table__tr.pf-m-expanded::after,
+#images-table .pf-v6-c-table__expandable-row::after,
+#images-table .pf-v6-c-table__expandable-row::before {
+  display: none;
+  content: none;
+}
+
+#images-table .pf-v6-c-table__expandable-row > .pf-v6-c-table__td {
+  background: var(--pf-t--global--background--color--primary--default, #fff);
+  border-block-end: 1px solid #d2d2d2;
+  vertical-align: top;
+}
+
+#images-table .pf-v6-c-table__expandable-row > .pf-v6-c-table__td::before,
+#images-table .pf-v6-c-table__expandable-row > .pf-v6-c-table__td::after {
+  display: none;
+  content: none;
+}
+
+/* Reset PF responsive inset padding on expandable content wrapper */
+#images-table .pf-v6-c-table__expandable-row .table-expanded-content {
+  --pf-v6-c-table__expandable-row-content--PaddingInlineStart: 0;
+  --pf-v6-c-table__expandable-row-content--PaddingInlineEnd: 0;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+}
+
+.table-expanded-panel {
+  /* Untitled.pdf — Expanded row inset */
+  padding: 1rem 1.5rem 1rem 3.5rem;
+}
+
+.table-expanded-panel__title {
+  margin: 0 0 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+/* Single column of label / value rows (Untitled.pdf — Expanded row) */
+.table-expanded-dl {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 0;
+}
+
+.table-expanded-dl__group {
+  display: grid;
+  grid-template-columns: 6.5rem minmax(0, 1fr);
+  column-gap: 1.5rem;
+  align-items: baseline;
+}
+
+.table-expanded-dl__group .pf-v6-c-description-list__term {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: #6a6e73;
+}
+
+.table-expanded-dl__group .pf-v6-c-description-list__description {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #151515;
+}
+
+.table-expanded-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+/* Details popover (fixed position from JS) */
+#details-popover:not(.hidden) {
+  display: block;
+  position: fixed;
+  z-index: var(--pf-t--global--z-index--xl);
+  max-width: 22rem;
+}
+
+.checksum-text {
+  word-break: break-all;
+}
+
+/* Upload dropzone highlight */
+#upload-dropzone.pf-m-dragover {
+  outline: 2px dashed var(--pf-t--global--border--color--brand--default);
+  outline-offset: 2px;
+}
+
+/* Demo bar */
+.demo-bar {
+  position: fixed;
+  inset-block-end: 0;
+  inset-inline: 0;
+  z-index: var(--pf-t--global--z-index--2xl);
+  padding: var(--pf-t--global--spacer--sm) var(--pf-t--global--spacer--md);
+  background: var(--pf-t--global--background--color--inverse--default);
+  color: var(--pf-t--global--text--color--inverse);
+}
+
+.demo-bar .pf-v6-c-button.pf-m-secondary {
+  --pf-v6-c-button--m-secondary--BackgroundColor: transparent;
+  --pf-v6-c-button--m-secondary--Color: var(--pf-t--global--text--color--inverse);
+  --pf-v6-c-button--m-secondary--BorderColor: var(--pf-t--global--border--color--inverse);
+}
+
+/* Toast */
+.toast-alert {
+  position: fixed;
+  inset-block-end: 3.5rem;
+  inset-inline-end: var(--pf-t--global--spacer--lg);
+  z-index: var(--pf-t--global--z-index--2xl);
+  max-width: 24rem;
+}

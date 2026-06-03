@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Image builder — RHEL</title>
+  <link rel="stylesheet" href="vendor/patternfly.min.css" />
+  <link rel="stylesheet" href="vendor/patternfly-addons.css" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="pf-v6-c-page" id="page">
+    <header class="pf-v6-c-masthead pf-v6-c-page__header pf-m-display-inline" role="banner">
+      <div class="pf-v6-c-masthead__main">
+        <button type="button" class="pf-v6-c-button pf-m-plain" aria-label="Menu">
+          <span class="pf-v6-c-button__icon"><i class="fas fa-bars" aria-hidden="true"></i></span>
+        </button>
+        <a class="pf-v6-c-masthead__brand" href="#">
+          <svg class="pf-v6-c-brand pf-m-icon" height="26" width="26" viewBox="0 0 26 26" aria-hidden="true">
+            <rect width="26" height="26" rx="3" fill="#0066CC"/>
+            <rect x="6" y="6" width="14" height="14" rx="1" fill="none" stroke="#fff" stroke-width="2"/>
+          </svg>
+          <span class="pf-v6-c-brand__text">PatternFly</span>
+        </a>
+      </div>
+      <div class="pf-v6-c-masthead__content">
+        <div class="pf-v6-c-toolbar pf-m-full-width pf-m-nowrap">
+          <div class="pf-v6-c-toolbar__content">
+            <div class="pf-v6-c-toolbar__content-section pf-m-align-right pf-m-nowrap masthead-tools">
+              <button type="button" class="masthead-util-btn masthead-util-btn--icon" aria-label="Settings">
+                <i class="fas fa-cog" aria-hidden="true"></i>
+              </button>
+              <button type="button" class="masthead-util-btn masthead-util-btn--icon" aria-label="Help">
+                <i class="fas fa-question-circle" aria-hidden="true"></i>
+              </button>
+              <button type="button" class="masthead-util-btn masthead-util-btn--user" aria-expanded="false" aria-haspopup="menu" aria-label="Username">
+                <span class="masthead-user-avatar" aria-hidden="true">
+                  <i class="fas fa-user"></i>
+                </span>
+                <span class="masthead-user-name">Username</span>
+                <i class="fas fa-caret-down masthead-user-caret" aria-hidden="true"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="pf-v6-c-page__sidebar" tabindex="-1">
+      <div class="pf-v6-c-page__sidebar-body">
+        <nav class="pf-v6-c-nav" aria-label="Global">
+          <h2 class="pf-v6-c-nav__section-title">Red Hat Enterprise Linux</h2>
+          <ul class="pf-v6-c-nav__list">
+            <li class="pf-v6-c-nav__item">
+              <a href="#" class="pf-v6-c-nav__link">Dashboard</a>
+            </li>
+            <li class="pf-v6-c-nav__item pf-m-expanded">
+              <button class="pf-v6-c-nav__link" aria-expanded="true">Inventory</button>
+              <section class="pf-v6-c-nav__subnav" aria-label="Inventory">
+                <ul class="pf-v6-c-nav__list">
+                  <li class="pf-v6-c-nav__item"><a href="#" class="pf-v6-c-nav__link">Systems</a></li>
+                  <li class="pf-v6-c-nav__item"><a href="#" class="pf-v6-c-nav__link">Workspaces</a></li>
+                  <li class="pf-v6-c-nav__item">
+                    <a href="#" class="pf-v6-c-nav__link pf-m-current" aria-current="page">Images</a>
+                  </li>
+                  <li class="pf-v6-c-nav__item"><a href="#" class="pf-v6-c-nav__link">System configuration</a></li>
+                </ul>
+              </section>
+            </li>
+            <li class="pf-v6-c-nav__item">
+              <button class="pf-v6-c-nav__link" aria-expanded="false">Content</button>
+            </li>
+            <li class="pf-v6-c-nav__item">
+              <button class="pf-v6-c-nav__link" aria-expanded="false">Operations</button>
+            </li>
+            <li class="pf-v6-c-nav__item">
+              <button class="pf-v6-c-nav__link" aria-expanded="false">Security</button>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+
+    <main class="pf-v6-c-page__main" tabindex="-1" role="main">
+      <section class="pf-v6-c-page__main-breadcrumb pf-m-page-insets">
+        <nav class="pf-v6-c-breadcrumb" aria-label="Breadcrumb">
+          <ol class="pf-v6-c-breadcrumb__list">
+            <li class="pf-v6-c-breadcrumb__item"><a href="#">RHEL</a></li>
+            <li class="pf-v6-c-breadcrumb__item"><a href="#">Inventory</a></li>
+            <li class="pf-v6-c-breadcrumb__item">
+              <span class="pf-v6-c-breadcrumb__item-divider" aria-hidden="true"><i class="fas fa-angle-right"></i></span>
+              <span class="pf-v6-c-breadcrumb__link pf-m-current" aria-current="page">Images</span>
+            </li>
+          </ol>
+        </nav>
+      </section>
+
+      <section class="pf-v6-c-page__main-section pf-m-limit-width pf-m-page-insets">
+        <div class="pf-v6-l-flex pf-m-column pf-m-gap-lg">
+          <div class="pf-v6-l-flex pf-m-justify-content-space-between pf-m-align-items-flex-start pf-m-gap-md pf-m-wrap">
+            <div class="pf-v6-l-flex pf-m-column pf-m-flex-1">
+              <h1 class="pf-v6-c-title pf-m-2xl">Image builder</h1>
+              <p class="pf-v6-c-content" id="page-desc">
+                Build, customize, and deploy RHEL images for public cloud, private cloud, and on-premise environments.
+                You can manage your images by duplicating, rebuilding, or editing existing configurations.
+                Download your finished builds or launch them directly as deployment-ready systems.
+              </p>
+            </div>
+            <div class="pf-v6-c-action-list">
+              <div class="pf-v6-c-action-list__group">
+                <button type="button" class="pf-v6-c-button pf-m-primary">Build new image</button>
+                <button type="button" class="pf-v6-c-button pf-m-secondary" data-modal="download-rhel">Download RHEL</button>
+                <button type="button" class="pf-v6-c-button pf-m-secondary" data-modal="import">Import</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="pf-v6-c-toolbar" id="table-toolbar">
+            <div class="pf-v6-c-toolbar__content">
+              <div class="pf-v6-c-toolbar__content-section">
+                <div class="pf-v6-c-toolbar__group pf-m-filter-group pf-m-overflow-menu image-builder-filters">
+                  <div id="filter-group" class="image-builder-filters__category"></div>
+                  <div id="filter-value-control" class="image-builder-filters__value filter-value-control"></div>
+                </div>
+                <div class="pf-v6-c-toolbar__group">
+                  <div class="pf-v6-c-action-list">
+                    <div class="pf-v6-c-action-list__group">
+                      <button type="button" class="pf-v6-c-button pf-m-secondary" id="btn-edit" disabled>
+                        <span class="pf-v6-c-button__icon"><i class="fas fa-pen" aria-hidden="true"></i></span>
+                        Edit
+                      </button>
+                      <button type="button" class="pf-v6-c-button pf-m-secondary" id="btn-duplicate" disabled>
+                        <span class="pf-v6-c-button__icon"><i class="fas fa-copy" aria-hidden="true"></i></span>
+                        Duplicate
+                      </button>
+                      <button type="button" class="pf-v6-c-button pf-m-secondary" id="btn-rebuild" disabled>
+                        <span class="pf-v6-c-button__icon"><i class="fas fa-redo" aria-hidden="true"></i></span>
+                        Rebuild
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div class="pf-v6-c-toolbar__item pf-m-align-right">
+                  <div class="pagination-control pagination-control--top" id="pagination-top" aria-label="Top pagination"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="table-container">
+            <table class="pf-v6-c-table" role="grid" id="images-table" aria-label="Images">
+              <colgroup>
+                <col class="table-col-control" span="3" />
+              </colgroup>
+              <thead class="pf-v6-c-table__thead">
+                <tr class="pf-v6-c-table__tr">
+                  <th class="pf-v6-c-table__th pf-v6-c-table__toggle" aria-label="Expand"></th>
+                  <th class="pf-v6-c-table__th pf-v6-c-table__check">
+                    <label>
+                      <input type="checkbox" id="select-all" aria-label="Select all rows" />
+                    </label>
+                  </th>
+                  <th class="pf-v6-c-table__th pf-v6-c-table__favorite" aria-label="Favorite"></th>
+                  <th class="pf-v6-c-table__th">Name</th>
+                  <th class="pf-v6-c-table__th">Last updated</th>
+                  <th class="pf-v6-c-table__th">Operating system</th>
+                  <th class="pf-v6-c-table__th">Target environment</th>
+                  <th class="pf-v6-c-table__th">Status</th>
+                  <th class="pf-v6-c-table__th">Instance</th>
+                  <th class="pf-v6-c-table__th pf-v6-c-table__action" aria-label="Actions"></th>
+                </tr>
+              </thead>
+              <tbody class="pf-v6-c-table__tbody" id="table-body"></tbody>
+            </table>
+            <div class="pf-v6-c-empty-state pf-m-lg hidden" id="empty-state">
+              <div class="pf-v6-c-empty-state__content">
+                <div class="pf-v6-c-empty-state__body">
+                  <p class="pf-v6-c-empty-state__text">No images match your filters.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="pf-v6-l-flex pf-m-justify-content-flex-end">
+            <div class="pagination-control pagination-control--bottom" id="pagination-bottom" aria-label="Bottom pagination"></div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Modals -->
+  <div class="pf-v6-c-backdrop hidden" id="modal-backdrop" aria-hidden="true">
+  <div class="pf-v6-c-modal-box pf-m-lg hidden" id="modal-download-rhel" role="dialog" aria-modal="true" aria-labelledby="download-rhel-title">
+    <div class="pf-v6-c-modal-box__close">
+      <button type="button" class="pf-v6-c-button pf-m-plain" data-close aria-label="Close">
+        <span class="pf-v6-c-button__icon"><i class="fas fa-times" aria-hidden="true"></i></span>
+      </button>
+    </div>
+    <header class="pf-v6-c-modal-box__header">
+      <h1 class="pf-v6-c-modal-box__title" id="download-rhel-title">Build and download RHEL</h1>
+    </header>
+    <div class="pf-v6-c-modal-box__body">
+      <p class="pf-v6-c-content pf-v6-u-mb-md">Directly build and download Red Hat Enterprise Linux (RHEL) ISOs and images tailored for your environment.</p>
+      <p class="pf-v6-c-content pf-v6-u-mb-md">Use <strong>Build latest</strong> to begin customizing your image with Image Builder, or select <strong>Download blueprint</strong> to quickly access the latest stable version of the image. For more information, visit <a href="https://developers.redhat.com" target="_blank" rel="noopener">Red Hat Developer <i class="fas fa-external-link-alt pf-v6-u-ml-xs" aria-hidden="true"></i></a></p>
+      <h2 class="pf-v6-c-title pf-m-md pf-v6-u-mt-lg">Network install images</h2>
+      <div class="pf-v6-l-gallery pf-m-gutter iso-gallery" id="network-images"></div>
+      <h2 class="pf-v6-c-title pf-m-md pf-v6-u-mt-lg">Offline install images</h2>
+      <div class="pf-v6-l-gallery pf-m-gutter iso-gallery" id="offline-dvd-images"></div>
+      <h2 class="pf-v6-c-title pf-m-md pf-v6-u-mt-lg">KVM guest images</h2>
+      <div class="pf-v6-l-gallery pf-m-gutter iso-gallery" id="kvm-images"></div>
+    </div>
+  </div>
+
+  <div class="pf-v6-c-modal-box pf-m-sm hidden" id="modal-import" role="dialog" aria-modal="true" aria-labelledby="import-title">
+    <div class="pf-v6-c-modal-box__close">
+      <button type="button" class="pf-v6-c-button pf-m-plain" data-close aria-label="Close">
+        <span class="pf-v6-c-button__icon"><i class="fas fa-times" aria-hidden="true"></i></span>
+      </button>
+    </div>
+    <header class="pf-v6-c-modal-box__header">
+      <h1 class="pf-v6-c-modal-box__title" id="import-title">Import blueprint files</h1>
+    </header>
+    <div class="pf-v6-c-modal-box__body">
+      <p class="pf-v6-c-content pf-v6-u-mb-md">Import blueprint files to build, customize, and deploy your images. Using a blueprint allows you to quickly apply existing configurations and maintain consistency across your environment.</p>
+      <div class="pf-v6-l-flex pf-m-gap-sm pf-v6-u-mb-md">
+        <div class="pf-v6-c-form-control pf-m-flex-1">
+          <input type="text" id="upload-filename" placeholder="Drag and drop a file or upload" readonly />
+        </div>
+        <button type="button" class="pf-v6-c-button pf-m-secondary" id="btn-upload">Upload</button>
+        <button type="button" class="pf-v6-c-button pf-m-secondary" id="btn-clear" disabled>Clear</button>
+      </div>
+      <div class="pf-v6-c-file-upload pf-m-drag-hover" id="upload-dropzone">
+        <div class="pf-v6-c-file-upload__file-select">
+          <div class="pf-v6-c-file-upload__file-select-icon">
+            <i class="fas fa-upload" aria-hidden="true"></i>
+          </div>
+          <div class="pf-v6-c-file-upload__file-select-text">
+            <p class="upload-hint">Upload your blueprint file. Supported formats: JSON, TOML.</p>
+          </div>
+        </div>
+      </div>
+      <div class="pf-v6-c-switch pf-v6-u-mt-md">
+        <input class="pf-v6-c-switch__input" type="checkbox" id="import-repos" checked />
+        <span class="pf-v6-c-switch__toggle"></span>
+        <label class="pf-v6-c-switch__label" for="import-repos">Import missing custom repositories after file upload.</label>
+      </div>
+    </div>
+    <footer class="pf-v6-c-modal-box__footer">
+      <button type="button" class="pf-v6-c-button pf-m-primary" id="btn-import-submit" disabled>Import</button>
+      <button type="button" class="pf-v6-c-button pf-m-link" data-close>Cancel</button>
+    </footer>
+  </div>
+
+  <div class="pf-v6-c-modal-box pf-m-sm hidden" id="modal-launch" role="dialog" aria-modal="true" aria-labelledby="launch-title" aria-describedby="launch-description">
+    <div class="pf-v6-c-modal-box__close">
+      <button type="button" class="pf-v6-c-button pf-m-plain" data-close aria-label="Close">
+        <span class="pf-v6-c-button__icon"><i class="fas fa-times" aria-hidden="true"></i></span>
+      </button>
+    </div>
+    <header class="pf-v6-c-modal-box__header">
+      <div class="pf-v6-c-modal-box__header-main">
+        <h1 class="pf-v6-c-modal-box__title" id="launch-title">Launch with Amazon Web Services</h1>
+        <p class="pf-v6-c-modal-box__description" id="launch-description"></p>
+      </div>
+    </header>
+    <div class="pf-v6-c-modal-box__body" id="launch-body"></div>
+    <footer class="pf-v6-c-modal-box__footer">
+      <button type="button" class="pf-v6-c-button pf-m-primary" data-close>Close</button>
+    </footer>
+  </div>
+  </div>
+
+  <div class="pf-v6-c-popover pf-m-top hidden" id="details-popover" role="dialog" aria-label="Image details">
+    <div class="pf-v6-c-popover__arrow"></div>
+    <div class="pf-v6-c-popover__content">
+      <div class="pf-v6-c-popover__close">
+        <button type="button" class="pf-v6-c-button pf-m-plain" id="details-close" aria-label="Close">
+          <span class="pf-v6-c-button__icon"><i class="fas fa-times" aria-hidden="true"></i></span>
+        </button>
+      </div>
+      <div class="pf-v6-c-popover__header">
+        <div class="pf-v6-c-popover__title">Details</div>
+      </div>
+      <div class="pf-v6-c-popover__body">
+        <dl class="pf-v6-c-description-list pf-m-horizontal pf-m-2-col">
+          <div class="pf-v6-c-description-list__group">
+            <dt class="pf-v6-c-description-list__term">File name</dt>
+            <dd class="pf-v6-c-description-list__description">rhel-10.0-x86_64-dvd.iso</dd>
+          </div>
+          <div class="pf-v6-c-description-list__group">
+            <dt class="pf-v6-c-description-list__term">File size</dt>
+            <dd class="pf-v6-c-description-list__description">7.88 GB</dd>
+          </div>
+          <div class="pf-v6-c-description-list__group">
+            <dt class="pf-v6-c-description-list__term">Last updated</dt>
+            <dd class="pf-v6-c-description-list__description">05 Mar 2025</dd>
+          </div>
+          <div class="pf-v6-c-description-list__group">
+            <dt class="pf-v6-c-description-list__term">SHA-256-checksum</dt>
+            <dd class="pf-v6-c-description-list__description">
+              <div class="pf-v6-l-flex pf-m-gap-sm pf-m-align-items-center">
+                <code class="pf-v6-u-font-size-sm checksum-text">edce2dd6f8e1d1b2ff0b204f89a3c7e5d1f2a8b9c0d3e4f5a6b7c8d9e0f1a2b3</code>
+                <button type="button" class="pf-v6-c-button pf-m-plain btn-copy" data-copy="edce2dd6f8e1d1b2ff0b204f89a3c7e5d1f2a8b9c0d3e4f5a6b7c8d9e0f1a2b3" aria-label="Copy checksum">
+                  <span class="pf-v6-c-button__icon"><i class="fas fa-copy" aria-hidden="true"></i></span>
+                </button>
+              </div>
+            </dd>
+          </div>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div class="demo-bar pf-v6-l-flex pf-m-gap-sm pf-m-align-items-center" id="demo-bar">
+    <span class="pf-v6-u-font-size-sm">Prototype controls:</span>
+    <button type="button" class="pf-v6-c-button pf-m-secondary pf-m-small" id="toggle-empty">Toggle empty state</button>
+    <button type="button" class="pf-v6-c-button pf-m-secondary pf-m-small" id="show-launch-aws">AWS launch</button>
+    <button type="button" class="pf-v6-c-button pf-m-secondary pf-m-small" id="show-launch-azure">Azure launch</button>
+    <button type="button" class="pf-v6-c-button pf-m-secondary pf-m-small" id="show-launch-gcp">GCP launch</button>
+    <button type="button" class="pf-v6-c-button pf-m-secondary pf-m-small" id="show-launch-oci">OCI launch</button>
+  </div>
+
+  <div class="pf-v6-c-alert pf-m-success pf-m-inline hidden toast-alert" id="toast" role="status">
+    <div class="pf-v6-c-alert__icon">
+      <i class="fas fa-fw fa-check-circle" aria-hidden="true"></i>
+    </div>
+    <div class="pf-v6-c-alert__title" id="toast-text"></div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

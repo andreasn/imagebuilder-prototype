@@ -1,0 +1,12 @@
+{
+  "name": "image-builder-prototype",
+  "private": true,
+  "description": "PatternFly 6 interactive prototype for RHEL Image builder",
+  "scripts": {
+    "start": "python3 -m http.server 8080",
+    "postinstall": "cp node_modules/@patternfly/patternfly/patternfly.min.css vendor/ && cp node_modules/@patternfly/patternfly/patternfly-addons.css vendor/ && cp -r node_modules/@patternfly/patternfly/assets vendor/"
+  },
+  "dependencies": {
+    "@patternfly/patternfly": "^6.5.2"
+  }
+}
