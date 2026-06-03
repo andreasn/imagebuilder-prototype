@@ -136,6 +136,16 @@ html.pf-modal-open {
   overflow: hidden;
 }
 
+/* Build new image — body grows to match synced min-height (set in openModal) */
+#modal-build-image.pf-v6-c-modal-box:not(.hidden) {
+  max-height: 90vh;
+}
+
+#modal-build-image .pf-v6-c-modal-box__body {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
 /* Download RHEL modal — section headings */
 #modal-download-rhel .download-rhel-section-title {
   margin-block-end: var(--pf-t--global--spacer--md);
@@ -891,10 +901,63 @@ html.pf-modal-open {
   word-break: break-all;
 }
 
-/* Upload dropzone highlight */
-#upload-dropzone.pf-m-dragover {
-  outline: 2px dashed var(--pf-t--global--border--color--brand--default);
-  outline-offset: 2px;
+/* Import modal — Upload / Clear match masthead utility buttons */
+#modal-import {
+  --masthead-util-bg: #f5f5f5;
+  --masthead-util-bg-hover: #ededed;
+  --masthead-util-border: #d2d2d2;
+  --masthead-util-text: #151515;
+  --masthead-util-radius: 4px;
+  --masthead-util-size: 2.25rem;
+}
+
+#modal-import .import-util-btn {
+  flex-shrink: 0;
+  height: var(--masthead-util-size);
+  padding-inline: 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 400;
+  white-space: nowrap;
+  border-radius: var(--masthead-util-radius);
+}
+
+#modal-import .import-util-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+#modal-import .import-util-btn:disabled:hover {
+  background: var(--masthead-util-bg);
+}
+
+/* Import modal — dotted drop zone (Untitled.pdf) */
+#modal-import .import-drop-area {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pf-t--global--spacer--md);
+  padding: var(--pf-t--global--spacer--md);
+  border: 1px dashed #8a8d90;
+  border-radius: var(--pf-t--global--border--radius--medium);
+}
+
+#modal-import .import-blueprint-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+#modal-import #import-blueprint-field {
+  width: 100%;
+}
+
+#modal-import #import-blueprint-field textarea {
+  min-height: 0;
+}
+
+#modal-import .import-blueprint-hint {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: #6a6e73;
 }
 
 /* Toast */

@@ -86,7 +86,10 @@
         <nav class="pf-v6-c-breadcrumb" aria-label="Breadcrumb">
           <ol class="pf-v6-c-breadcrumb__list">
             <li class="pf-v6-c-breadcrumb__item"><a href="#">RHEL</a></li>
-            <li class="pf-v6-c-breadcrumb__item"><a href="#">Inventory</a></li>
+            <li class="pf-v6-c-breadcrumb__item">
+              <span class="pf-v6-c-breadcrumb__item-divider" aria-hidden="true"><i class="fas fa-angle-right"></i></span>
+              <a href="#">Inventory</a>
+            </li>
             <li class="pf-v6-c-breadcrumb__item">
               <span class="pf-v6-c-breadcrumb__item-divider" aria-hidden="true"><i class="fas fa-angle-right"></i></span>
               <span class="pf-v6-c-breadcrumb__link pf-m-current" aria-current="page">Images</span>
@@ -108,7 +111,7 @@
             </div>
             <div class="pf-v6-c-action-list">
               <div class="pf-v6-c-action-list__group">
-                <button type="button" class="pf-v6-c-button pf-m-primary">Build new image</button>
+                <button type="button" class="pf-v6-c-button pf-m-primary" data-modal="build-image">Build new image</button>
                 <button type="button" class="pf-v6-c-button pf-m-secondary" data-modal="download-rhel">Download RHEL</button>
                 <button type="button" class="pf-v6-c-button pf-m-secondary" data-modal="import">Import</button>
               </div>
@@ -191,6 +194,18 @@
 
   <!-- Modals -->
   <div class="pf-v6-c-backdrop hidden" id="modal-backdrop" aria-hidden="true">
+  <div class="pf-v6-c-modal-box pf-m-lg hidden" id="modal-build-image" role="dialog" aria-modal="true" aria-labelledby="build-image-title">
+    <div class="pf-v6-c-modal-box__close">
+      <button type="button" class="pf-v6-c-button pf-m-plain" data-close aria-label="Close">
+        <span class="pf-v6-c-button__icon"><i class="fas fa-times" aria-hidden="true"></i></span>
+      </button>
+    </div>
+    <header class="pf-v6-c-modal-box__header">
+      <h1 class="pf-v6-c-modal-box__title" id="build-image-title">Image build dialog</h1>
+    </header>
+    <div class="pf-v6-c-modal-box__body"></div>
+  </div>
+
   <div class="pf-v6-c-modal-box pf-m-lg hidden" id="modal-download-rhel" role="dialog" aria-modal="true" aria-labelledby="download-rhel-title">
     <div class="pf-v6-c-modal-box__close">
       <button type="button" class="pf-v6-c-button pf-m-plain" data-close aria-label="Close">
@@ -223,21 +238,19 @@
     </header>
     <div class="pf-v6-c-modal-box__body">
       <p class="pf-v6-c-content pf-v6-u-mb-md">Import blueprint files to build, customize, and deploy your images. Using a blueprint allows you to quickly apply existing configurations and maintain consistency across your environment.</p>
-      <div class="pf-v6-l-flex pf-m-gap-sm pf-v6-u-mb-md">
-        <div class="pf-v6-c-form-control pf-m-flex-1">
-          <input type="text" id="upload-filename" placeholder="Drag and drop a file or upload" readonly />
+      <div class="import-drop-area">
+        <div class="pf-v6-l-flex pf-m-gap-sm">
+          <div class="pf-v6-c-form-control pf-m-flex-1">
+            <input type="text" id="upload-filename" placeholder="Drag and drop a file or upload" readonly />
+          </div>
+          <button type="button" class="masthead-util-btn import-util-btn" id="btn-upload">Upload</button>
+          <button type="button" class="masthead-util-btn import-util-btn" id="btn-clear" disabled>Clear</button>
         </div>
-        <button type="button" class="pf-v6-c-button pf-m-secondary" id="btn-upload">Upload</button>
-        <button type="button" class="pf-v6-c-button pf-m-secondary" id="btn-clear" disabled>Clear</button>
-      </div>
-      <div class="pf-v6-c-file-upload pf-m-drag-hover" id="upload-dropzone">
-        <div class="pf-v6-c-file-upload__file-select">
-          <div class="pf-v6-c-file-upload__file-select-icon">
-            <i class="fas fa-upload" aria-hidden="true"></i>
+        <div class="import-blueprint-field">
+          <div class="pf-v6-c-form-control pf-m-textarea pf-m-resize-both" id="import-blueprint-field">
+            <textarea id="import-blueprint-content" rows="4" aria-describedby="import-blueprint-hint"></textarea>
           </div>
-          <div class="pf-v6-c-file-upload__file-select-text">
-            <p class="upload-hint">Upload your blueprint file. Supported formats: JSON, TOML.</p>
-          </div>
+          <p class="import-blueprint-hint" id="import-blueprint-hint">Upload your blueprint file. Supported formats: JSON, TOML.</p>
         </div>
       </div>
       <div class="pf-v6-c-switch pf-v6-u-mt-md">

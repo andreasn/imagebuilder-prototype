@@ -1088,7 +1088,7 @@ function renderIsoCards(containerId, titles) {
         <div class="pf-v6-c-card__footer">
           <div class="pf-v6-c-action-list">
             <div class="pf-v6-c-action-list__group">
-              <button type="button" class="pf-v6-c-button pf-m-primary pf-m-small">Build latest</button>
+              <button type="button" class="pf-v6-c-button pf-m-primary pf-m-small" data-build-latest>Build latest</button>
               <button type="button" class="pf-v6-c-button pf-m-secondary pf-m-small">Download blueprint (.json)</button>
             </div>
           </div>
@@ -1115,6 +1115,34 @@ function renderIsoCards(containerId, titles) {
   });
 }
 
+function measureModalHeight(modalEl) {
+  if (!modalEl) return 0;
+
+  const hadHidden = modalEl.classList.contains("hidden");
+  const restore = {
+    visibility: modalEl.style.visibility,
+    pointerEvents: modalEl.style.pointerEvents,
+    position: modalEl.style.position,
+    left: modalEl.style.left,
+  };
+
+  modalEl.classList.remove("hidden");
+  modalEl.style.visibility = "hidden";
+  modalEl.style.pointerEvents = "none";
+  modalEl.style.position = "absolute";
+  modalEl.style.left = "-9999px";
+
+  const height = modalEl.offsetHeight;
+
+  if (hadHidden) modalEl.classList.add("hidden");
+  modalEl.style.visibility = restore.visibility;
+  modalEl.style.pointerEvents = restore.pointerEvents;
+  modalEl.style.position = restore.position;
+  modalEl.style.left = restore.left;
+
+  return height;
+}
+
 function openModal(id) {
   const backdrop = $("#modal-backdrop");
   const modal = $(`#modal-${id}`);
@@ -1122,14 +1150,32 @@ function openModal(id) {
   backdrop.classList.remove("hidden");
   modal.classList.remove("hidden");
   document.documentElement.classList.add("pf-modal-open");
+
+  if (id === "build-image") {
+    const downloadModal = $("#modal-download-rhel");
+    const height = measureModalHeight(downloadModal);
+    if (height) modal.style.minHeight = `${height}px`;
+  }
+
   modal.focus?.();
 }
 
 function closeModals() {
   $("#modal-backdrop").classList.add("hidden");
-  $$("#modal-backdrop .pf-v6-c-modal-box").forEach((m) => m.classList.add("hidden"));
+  $$("#modal-backdrop .pf-v6-c-modal-box").forEach((m) => {
+    m.classList.add("hidden");
+    if (m.id === "modal-build-image") m.style.minHeight = "";
+  });
   $("#details-popover").classList.add("hidden");
   document.documentElement.classList.remove("pf-modal-open");
+}
+
+function isDismissOnlyByCloseModalOpen() {
+  return (
+    !$("#modal-build-image").classList.contains("hidden") ||
+    !$("#modal-download-rhel").classList.contains("hidden") ||
+    !$("#modal-import").classList.contains("hidden")
+  );
 }
 
 function launchCodeBlock(code) {
@@ -1230,30 +1276,37 @@ function initImportModal() {
   const filename = $("#upload-filename");
   const clearBtn = $("#btn-clear");
   const importBtn = $("#btn-import-submit");
-  const dropzone = $("#upload-dropzone");
+  const blueprintText = $("#import-blueprint-content");
   const fileInput = document.createElement("input");
   fileInput.type = "file";
   fileInput.accept = ".json,.toml";
   fileInput.hidden = true;
   document.body.appendChild(fileInput);
 
+  const updateImportState = () => {
+    const hasFile = Boolean(filename.value.trim());
+    const hasText = Boolean(blueprintText?.value.trim());
+    const canImport = hasFile || hasText;
+    importBtn.disabled = !canImport;
+    clearBtn.disabled = !hasFile && !hasText;
+  };
+
   $("#btn-upload").addEventListener("click", () => fileInput.click());
 
   fileInput.addEventListener("change", () => {
     if (fileInput.files[0]) {
       filename.value = fileInput.files[0].name;
-      clearBtn.disabled = false;
-      importBtn.disabled = false;
-      dropzone.innerHTML = `<p><strong>${fileInput.files[0].name}</strong></p><p class="upload-hint">Ready to import.</p>`;
+      updateImportState();
     }
   });
+
+  blueprintText?.addEventListener("input", updateImportState);
 
   clearBtn.addEventListener("click", () => {
     filename.value = "";
     fileInput.value = "";
-    clearBtn.disabled = true;
-    importBtn.disabled = true;
-    dropzone.innerHTML = '<p class="upload-hint">Upload your blueprint file. Supported formats: JSON, TOML.</p>';
+    if (blueprintText) blueprintText.value = "";
+    updateImportState();
   });
 
   importBtn.addEventListener("click", () => {
@@ -1261,23 +1314,7 @@ function initImportModal() {
     closeModals();
   });
 
-  ["dragenter", "dragover"].forEach((ev) => {
-    dropzone.addEventListener(ev, (e) => {
-      e.preventDefault();
-      dropzone.classList.add("pf-m-dragover");
-    });
-  });
-  ["dragleave", "drop"].forEach((ev) => {
-    dropzone.addEventListener(ev, (e) => {
-      e.preventDefault();
-      dropzone.classList.remove("pf-m-dragover");
-      if (ev === "drop" && e.dataTransfer?.files[0]) {
-        filename.value = e.dataTransfer.files[0].name;
-        clearBtn.disabled = false;
-        importBtn.disabled = false;
-      }
-    });
-  });
+  updateImportState();
 }
 
 function render() {
@@ -1323,7 +1360,15 @@ function init() {
     btn.addEventListener("click", closeModals);
   });
 
-  $("#modal-backdrop").addEventListener("click", closeModals);
+  $("#modal-download-rhel")?.addEventListener("click", (e) => {
+    if (e.target.closest("[data-build-latest]")) closeModals();
+  });
+
+  $("#modal-backdrop").addEventListener("click", (e) => {
+    if (e.target !== e.currentTarget) return;
+    if (isDismissOnlyByCloseModalOpen()) return;
+    closeModals();
+  });
 
   $("#details-close").addEventListener("click", () => {
     $("#details-popover").classList.add("hidden");
@@ -1346,7 +1391,9 @@ function init() {
   });
 
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") closeModals();
+    if (e.key !== "Escape") return;
+    if (isDismissOnlyByCloseModalOpen()) return;
+    closeModals();
   });
 
   $$(".btn-copy").forEach((btn) => {
@@ -1356,7 +1403,11 @@ function init() {
     });
   });
 
-  ["#btn-edit", "#btn-duplicate", "#btn-rebuild"].forEach((sel) => {
+  $("#btn-edit")?.addEventListener("click", () => {
+    if (state.selected.size) openModal("build-image");
+  });
+
+  ["#btn-duplicate", "#btn-rebuild"].forEach((sel) => {
     $(sel)?.addEventListener("click", () => {
       if (state.selected.size) showToast(`${sel.slice(5)} action on ${state.selected.size} item(s) (prototype)`);
     });
