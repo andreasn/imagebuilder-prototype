@@ -256,6 +256,16 @@ html.pf-modal-open {
   justify-content: flex-end;
 }
 
+.pagination-control--bottom .pagination-nav-btn {
+  border: none;
+  background: transparent;
+}
+
+.pagination-control--bottom .pagination-nav-btn:hover:not(:disabled) {
+  background: transparent;
+  color: #151515;
+}
+
 .pagination-summary {
   display: flex;
   align-items: center;
