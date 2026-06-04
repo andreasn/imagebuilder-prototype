@@ -516,6 +516,37 @@ function getBuildingImages() {
   return state.images.filter((img) => isImageBuilding(img));
 }
 
+function deleteImage(id) {
+  const index = state.images.findIndex((i) => i.id === id);
+  if (index < 0) return;
+
+  const img = state.images[index];
+  const wasBuilding = isImageBuilding(img);
+
+  state.images.splice(index, 1);
+  state.selected.delete(id);
+  state.expanded.delete(id);
+  if (state.openKebab === id) state.openKebab = null;
+
+  if (wasBuilding) {
+    const stillBuilding = getBuildingImages();
+    if (!stillBuilding.length) {
+      clearBuildTimer();
+      state.buildAnchorId = null;
+      hideBuildProgressPopover();
+    } else if (state.buildAnchorId === id) {
+      state.buildAnchorId = stillBuilding[0].id;
+    }
+  }
+
+  const filtered = getFilteredImages();
+  const maxPage = Math.max(1, Math.ceil(filtered.length / state.perPage) || 1);
+  if (state.page > maxPage) state.page = maxPage;
+
+  renderTable();
+  showToast(`${img.name} deleted`);
+}
+
 function isImageBuilding(img) {
   return typeof img.buildPhaseIndex === "number";
 }
@@ -1301,7 +1332,7 @@ function bindTableEvents() {
       </ul>`;
       positionKebabMenu(menu, btn);
       menu.querySelector(".pf-m-danger")?.addEventListener("click", () => {
-        showToast(`Delete ${id} (prototype)`);
+        deleteImage(id);
         closeAllMenus();
       });
       menu.querySelector('[data-kebab-action="edit"]')?.addEventListener("click", () => {
