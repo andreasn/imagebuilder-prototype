@@ -309,10 +309,36 @@ const STATUS_BADGE_TOOLTIPS = {
   "Expires in 7 days": "Image content will expire in 7 days. Rebuild to refresh",
 };
 
-const BUILD_TOTAL_STEPS = 8;
-const BUILD_SUBSTEPS_PER_STEP = [14, 3, 2, 1, 1, 1, 1, 1];
-const BUILD_PENDING_MS = 5000;
-const BUILD_TICK_MS = 550;
+/** Build pipeline from screencast2.mp4 */
+const BUILD_PIPELINE = [
+  { id: "manifest", label: "Generating manifest", tableStatus: "Generating manifest" },
+  { id: "content", label: "Preparing content", tableStatus: "Preparing content" },
+  {
+    id: "building",
+    label: "Building image",
+    tableStatus: "Building image",
+    children: [
+      { id: "env", label: "Preparing build environment" },
+      { id: "os", label: "Setting up operating system" },
+      { id: "disk", label: "Creating disk image" },
+      { id: "convert", label: "Converting image" },
+    ],
+  },
+  { id: "upload", label: "Uploading to target", tableStatus: "Uploading to target" },
+];
+
+const BUILD_PHASES_FLAT = (() => {
+  const flat = [];
+  BUILD_PIPELINE.forEach((step) => {
+    flat.push({ id: step.id, parentId: null, label: step.label, tableStatus: step.tableStatus });
+    (step.children || []).forEach((child) => {
+      flat.push({ id: child.id, parentId: step.id, label: child.label, tableStatus: step.tableStatus });
+    });
+  });
+  return flat;
+})();
+
+const BUILD_PHASE_MS = 2500;
 
 function statusLabel(status) {
   const map = {
@@ -384,85 +410,175 @@ function formatBuildDate() {
   return new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
 
-function formatBuildProgressDetail(progress) {
-  if (!progress) return "";
-  let detail = `step ${progress.step} of ${progress.totalSteps}`;
-  if (progress.totalSubsteps > 1) {
-    detail += ` (substep ${progress.substep} of ${progress.totalSubsteps})`;
+function getFlatPhaseIndex(phaseId) {
+  return BUILD_PHASES_FLAT.findIndex((p) => p.id === phaseId);
+}
+
+function getBuildTableStatus(img) {
+  if (!isImageBuilding(img)) return "";
+  const idx = img.buildPhaseIndex ?? 0;
+  const phase = BUILD_PHASES_FLAT[idx];
+  if (!phase) return "Building image";
+  if (phase.parentId) {
+    const parent = BUILD_PIPELINE.find((s) => s.id === phase.parentId);
+    return parent?.tableStatus || "Building image";
   }
-  return detail;
+  return phase.tableStatus || phase.label;
+}
+
+function getBuildPhaseState(phaseId, activeFlatIndex) {
+  const idx = getFlatPhaseIndex(phaseId);
+  if (idx < 0) return "pending";
+  if (idx < activeFlatIndex) return "done";
+  if (idx === activeFlatIndex) return "active";
+  return "pending";
+}
+
+function getParentBuildPhaseState(parentStep, activeFlatIndex) {
+  const parentIdx = getFlatPhaseIndex(parentStep.id);
+  if (parentIdx < 0) return "pending";
+
+  if (parentStep.children?.length) {
+    const lastChildIdx = getFlatPhaseIndex(parentStep.children.at(-1).id);
+    if (activeFlatIndex > lastChildIdx) return "done";
+    if (activeFlatIndex >= parentIdx && activeFlatIndex <= lastChildIdx) return "active";
+    return "pending";
+  }
+
+  if (parentIdx < activeFlatIndex) return "done";
+  if (parentIdx === activeFlatIndex) return "active";
+  return "pending";
+}
+
+function renderBuildProgressMarker(phaseState) {
+  if (phaseState === "done") {
+    return `<span class="build-progress-step__marker build-progress-step__marker--done" aria-hidden="true"><i class="fas fa-check"></i></span>`;
+  }
+  if (phaseState === "active") {
+    return `<span class="build-progress-step__marker build-progress-step__marker--active" aria-hidden="true"><i class="fas fa-spinner fa-spin"></i></span>`;
+  }
+  return `<span class="build-progress-step__marker build-progress-step__marker--pending" aria-hidden="true"></span>`;
+}
+
+function renderBuildProgressSteps(activeFlatIndex) {
+  return BUILD_PIPELINE.map((step, stepIndex) => {
+    const parentState = getParentBuildPhaseState(step, activeFlatIndex);
+    const childrenHtml = (step.children || [])
+      .map(
+        (child) => {
+          const childState = getBuildPhaseState(child.id, activeFlatIndex);
+          return `<li class="build-progress-step build-progress-step--sub build-progress-step--${childState}">
+            ${renderBuildProgressMarker(childState)}
+            <span class="build-progress-step__label">${escapeHtml(child.label)}</span>
+          </li>`;
+        }
+      )
+      .join("");
+    const subList = childrenHtml ? `<ul class="build-progress-step__sublist">${childrenHtml}</ul>` : "";
+    const isLast = stepIndex === BUILD_PIPELINE.length - 1;
+    return `<li class="build-progress-step build-progress-step--main build-progress-step--${parentState}${isLast ? " build-progress-step--last" : ""}">
+      ${renderBuildProgressMarker(parentState)}
+      <span class="build-progress-step__label">${escapeHtml(step.label)}</span>
+      ${subList}
+    </li>`;
+  }).join("");
 }
 
 function renderTableStatusCell(img) {
-  const building = isImageBuilding(img);
-  const badge = renderStatusBadge(img.status, null, { img, plain: building });
-  const detail = building ? formatBuildProgressDetail(img.buildProgress) || "" : "";
-  const detailRow = building
-    ? `<div class="table-status-cell__detail" aria-live="polite">${detail ? escapeHtml(detail) : "&#8203;"}</div>`
-    : "";
+  if (isImageBuilding(img)) {
+    return `<div class="table-status-cell table-status-cell--building">
+      <span class="table-build-status">
+        <i class="fas fa-spinner fa-spin" aria-hidden="true"></i>
+        <span>${escapeHtml(getBuildTableStatus(img))}</span>
+      </span>
+    </div>`;
+  }
 
-  return `<div class="table-status-cell${building ? " table-status-cell--building" : ""}">${badge}${detailRow}</div>`;
+  const badge = renderStatusBadge(img.status, null, { img });
+  return `<div class="table-status-cell">${badge}</div>`;
 }
 
-function syncBuildStatusCell(img) {
-  const row = document.querySelector(`#images-table tr.pf-v6-c-table__tr[data-id="${img.id}"]`);
-  const statusTd = row?.querySelector(".table-col-status-cell");
-  if (!statusTd) {
-    renderTable();
-    return;
-  }
-  statusTd.innerHTML = renderTableStatusCell(img);
+function getBuildingImages() {
+  return state.images.filter((img) => isImageBuilding(img));
 }
 
 function isImageBuilding(img) {
-  return img.status === "pending" || img.status === "progress";
+  return typeof img.buildPhaseIndex === "number";
 }
 
-function clearBuildTimer(img) {
-  if (img._buildTimer) {
-    clearInterval(img._buildTimer);
-    img._buildTimer = null;
-  }
-  if (img._buildPendingTimeout) {
-    clearTimeout(img._buildPendingTimeout);
-    img._buildPendingTimeout = null;
+function clearBuildTimer() {
+  if (state.buildTimer) {
+    clearInterval(state.buildTimer);
+    state.buildTimer = null;
   }
 }
 
-function completeImageBuild(img) {
-  clearBuildTimer(img);
-  img.status = "expired";
-  img.statusBadgeText = "Expires in 7 days";
-  delete img.buildProgress;
-  img.lastUpdated = formatBuildDate();
+function hideBuildProgressPopover() {
+  $("#build-progress-popover")?.classList.add("hidden");
+}
+
+function positionBuildProgressPopover(anchorRowId) {
+  const popover = $("#build-progress-popover");
+  const row = document.querySelector(`#images-table tr.pf-v6-c-table__tr[data-id="${anchorRowId}"]`);
+  const statusTd = row?.querySelector(".table-col-status-cell");
+  if (!popover || !statusTd) return;
+
+  const rect = statusTd.getBoundingClientRect();
+  const popW = popover.offsetWidth || 300;
+  popover.style.top = `${Math.max(12, rect.top)}px`;
+  popover.style.left = `${Math.max(12, rect.left - popW - 12)}px`;
+}
+
+function syncBuildProgressUI(anchorRowId) {
+  const activeFlatIndex = getBuildingImages()[0]?.buildPhaseIndex ?? 0;
+  const stepsEl = $("#build-progress-steps");
+  if (stepsEl) {
+    stepsEl.innerHTML = `<ul class="build-progress-steps">${renderBuildProgressSteps(activeFlatIndex)}</ul>`;
+  }
+
+  getBuildingImages().forEach((img) => {
+    const row = document.querySelector(`#images-table tr.pf-v6-c-table__tr[data-id="${img.id}"]`);
+    const statusTd = row?.querySelector(".table-col-status-cell");
+    if (statusTd) statusTd.innerHTML = renderTableStatusCell(img);
+  });
+
+  if (anchorRowId) positionBuildProgressPopover(anchorRowId);
+}
+
+function completeAllBuilds() {
+  clearBuildTimer();
+  getBuildingImages().forEach((img) => {
+    img.status = "ready";
+    delete img.statusBadgeText;
+    delete img.buildPhaseIndex;
+    img.lastUpdated = formatBuildDate();
+  });
+  state.buildAnchorId = null;
+  hideBuildProgressPopover();
   renderTable();
 }
 
-function advanceBuildProgress(img) {
-  const progress = img.buildProgress;
-  if (!progress) return;
+function advanceAllBuilds() {
+  const building = getBuildingImages();
+  if (!building.length) return;
 
-  if (progress.substep < progress.totalSubsteps - 1) {
-    progress.substep += 1;
+  const current = building[0].buildPhaseIndex ?? 0;
+  if (current >= BUILD_PHASES_FLAT.length - 1) {
+    completeAllBuilds();
     return;
   }
 
-  if (progress.step < progress.totalSteps - 1) {
-    progress.step += 1;
-    progress.substep = 0;
-    progress.totalSubsteps = BUILD_SUBSTEPS_PER_STEP[progress.step];
-    return;
-  }
+  building.forEach((img) => {
+    img.buildPhaseIndex = current + 1;
+    img.status = "progress";
+  });
 
-  completeImageBuild(img);
+  syncBuildProgressUI(state.buildAnchorId);
 }
 
-function runBuildProgress(img) {
-  clearBuildTimer(img);
-  img._buildTimer = setInterval(() => {
-    advanceBuildProgress(img);
-    if (img.buildProgress) syncBuildStatusCell(img);
-  }, BUILD_TICK_MS);
+function startBuildTimer() {
+  clearBuildTimer();
+  state.buildTimer = setInterval(advanceAllBuilds, BUILD_PHASE_MS);
 }
 
 function startImageRebuild(imageIds) {
@@ -472,28 +588,23 @@ function startImageRebuild(imageIds) {
   ids.forEach((id) => {
     const img = state.images.find((i) => i.id === id);
     if (!img || isImageBuilding(img)) return;
-
-    clearBuildTimer(img);
-    img.status = "pending";
-    img.statusBadgeText = "Image build is pending";
-    delete img.buildProgress;
-
-    img._buildPendingTimeout = setTimeout(() => {
-      img._buildPendingTimeout = null;
-      img.status = "progress";
-      img.statusBadgeText = "Image build in progress";
-      img.buildProgress = {
-        step: 0,
-        totalSteps: BUILD_TOTAL_STEPS,
-        substep: 0,
-        totalSubsteps: BUILD_SUBSTEPS_PER_STEP[0],
-      };
-      renderTable();
-      runBuildProgress(img);
-    }, BUILD_PENDING_MS);
+    img.status = "progress";
+    delete img.statusBadgeText;
+    img.buildPhaseIndex = 0;
   });
 
+  state.buildAnchorId = ids[0];
   renderTable();
+
+  const stepsEl = $("#build-progress-steps");
+  const popover = $("#build-progress-popover");
+  if (stepsEl && popover) {
+    stepsEl.innerHTML = `<ul class="build-progress-steps">${renderBuildProgressSteps(0)}</ul>`;
+    popover.classList.remove("hidden");
+    positionBuildProgressPopover(state.buildAnchorId);
+  }
+
+  startBuildTimer();
 }
 
 function renderInstanceCell(img) {
@@ -1027,7 +1138,12 @@ function renderBuildInfo(img) {
         ${dl("Shared with", `<a href="#" class="table-expanded-link">${info.sharedWith} <i class="fas fa-external-link-alt" aria-hidden="true"></i></a>`)}
         ${dl(info.imageLabel, info.imageValue)}
         ${dl("Region", info.region)}
-        ${dl("Status", renderStatusBadge(img.status, null, { forFilter: true }))}
+        ${dl(
+          "Status",
+          isImageBuilding(img)
+            ? `<span class="table-build-status"><i class="fas fa-spinner fa-spin" aria-hidden="true"></i><span>${escapeHtml(getBuildTableStatus(img))}</span></span>`
+            : renderStatusBadge(img.status, null, { forFilter: true })
+        )}
       </dl>
     </div>`;
 }
@@ -1521,6 +1637,8 @@ function init() {
     $("#details-popover").classList.add("hidden");
   });
 
+  $("#build-progress-close")?.addEventListener("click", hideBuildProgressPopover);
+
   document.addEventListener("click", (e) => {
     if (
       !e.target.closest(".pf-filter-dropdown") &&
@@ -1534,6 +1652,14 @@ function init() {
     }
     if (!e.target.closest(".pf-v6-c-card") && !e.target.closest("#details-popover")) {
       $("#details-popover").classList.add("hidden");
+    }
+    if (
+      !e.target.closest("#build-progress-popover") &&
+      !e.target.closest(".table-col-status-cell") &&
+      !e.target.closest("[data-kebab-action='rebuild']") &&
+      !e.target.closest("#btn-rebuild")
+    ) {
+      hideBuildProgressPopover();
     }
   });
 
@@ -1568,7 +1694,12 @@ function init() {
     if (state.openKebab) closeAllMenus();
   };
   window.addEventListener("scroll", closeMenusOnScroll, true);
-  window.addEventListener("resize", closeMenusOnScroll);
+  window.addEventListener("resize", () => {
+    closeMenusOnScroll();
+    if (!$("#build-progress-popover")?.classList.contains("hidden") && state.buildAnchorId) {
+      positionBuildProgressPopover(state.buildAnchorId);
+    }
+  });
 
   render();
 }

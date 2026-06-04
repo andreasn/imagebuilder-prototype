@@ -327,6 +327,16 @@
     </div>
   </div>
 
+  <div class="build-progress-panel hidden" id="build-progress-popover" role="dialog" aria-label="Build progress">
+    <div class="build-progress-panel__header">
+      <h2 class="build-progress-panel__title">Build progress</h2>
+      <button type="button" class="pf-v6-c-button pf-m-plain" id="build-progress-close" aria-label="Close">
+        <span class="pf-v6-c-button__icon"><i class="fas fa-times" aria-hidden="true"></i></span>
+      </button>
+    </div>
+    <div class="build-progress-panel__body" id="build-progress-steps"></div>
+  </div>
+
   <div class="pf-v6-c-alert pf-m-success pf-m-inline hidden toast-alert" id="toast" role="status">
     <div class="pf-v6-c-alert__icon">
       <i class="fas fa-fw fa-check-circle" aria-hidden="true"></i>
