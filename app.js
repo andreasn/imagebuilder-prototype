@@ -306,7 +306,13 @@ const STATUS_TOOLTIPS = {
 
 const STATUS_BADGE_TOOLTIPS = {
   "Expires in 6 hours": "Image content will expire in 6 hours. Rebuild to refresh",
+  "Expires in 7 days": "Image content will expire in 7 days. Rebuild to refresh",
 };
+
+const BUILD_TOTAL_STEPS = 8;
+const BUILD_SUBSTEPS_PER_STEP = [14, 3, 2, 1, 1, 1, 1, 1];
+const BUILD_PENDING_MS = 5000;
+const BUILD_TICK_MS = 550;
 
 function statusLabel(status) {
   const map = {
@@ -354,21 +360,154 @@ function renderStatusTooltip(tipText) {
   </span>`;
 }
 
-function renderStatusBadge(status, tooltip, { forFilter = false, img = null } = {}) {
+function renderStatusBadge(status, tooltip, { forFilter = false, img = null, plain = false } = {}) {
   const st = statusLabel(status);
   const displayText = img?.statusBadgeText ?? st.text;
   const tipText = tooltip ?? (img ? getStatusTooltip(img) : STATUS_TOOLTIPS[status] || "");
   const filterClass = forFilter ? " pf-m-status-filter-label" : "";
-  const badge = `<span class="pf-v6-c-label pf-m-${st.mod} pf-m-outline${filterClass}">
+  const outlineClass = plain ? "" : " pf-m-outline";
+  const plainClass = plain && !forFilter ? " table-status-label--plain" : "";
+  const spinClass = status === "progress" && !forFilter ? " fa-spin" : "";
+  const badge = `<span class="pf-v6-c-label pf-m-${st.mod}${outlineClass}${filterClass}${plainClass}">
     <span class="pf-v6-c-label__content">
-      <span class="pf-v6-c-label__icon"><i class="fas ${st.icon}" aria-hidden="true"></i></span>
-      <span class="pf-v6-c-label__text">${displayText}</span>
+      <span class="pf-v6-c-label__icon"><i class="fas ${st.icon}${spinClass}" aria-hidden="true"></i></span>
+      <span class="pf-v6-c-label__text">${escapeHtml(displayText)}</span>
     </span>
   </span>`;
 
   if (forFilter || !tipText) return badge;
 
   return `<span class="status-label-tooltip-host" tabindex="0" aria-label="${escapeAttr(tipText)}">${badge}${renderStatusTooltip(tipText)}</span>`;
+}
+
+function formatBuildDate() {
+  return new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+}
+
+function formatBuildProgressDetail(progress) {
+  if (!progress) return "";
+  let detail = `step ${progress.step} of ${progress.totalSteps}`;
+  if (progress.totalSubsteps > 1) {
+    detail += ` (substep ${progress.substep} of ${progress.totalSubsteps})`;
+  }
+  return detail;
+}
+
+function renderTableStatusCell(img) {
+  const building = isImageBuilding(img);
+  const badge = renderStatusBadge(img.status, null, { img, plain: building });
+  const detail = building ? formatBuildProgressDetail(img.buildProgress) || "" : "";
+  const detailRow = building
+    ? `<div class="table-status-cell__detail" aria-live="polite">${detail ? escapeHtml(detail) : "&#8203;"}</div>`
+    : "";
+
+  return `<div class="table-status-cell${building ? " table-status-cell--building" : ""}">${badge}${detailRow}</div>`;
+}
+
+function syncBuildStatusCell(img) {
+  const row = document.querySelector(`#images-table tr.pf-v6-c-table__tr[data-id="${img.id}"]`);
+  const statusTd = row?.querySelector(".table-col-status-cell");
+  if (!statusTd) {
+    renderTable();
+    return;
+  }
+  statusTd.innerHTML = renderTableStatusCell(img);
+}
+
+function isImageBuilding(img) {
+  return img.status === "pending" || img.status === "progress";
+}
+
+function clearBuildTimer(img) {
+  if (img._buildTimer) {
+    clearInterval(img._buildTimer);
+    img._buildTimer = null;
+  }
+  if (img._buildPendingTimeout) {
+    clearTimeout(img._buildPendingTimeout);
+    img._buildPendingTimeout = null;
+  }
+}
+
+function completeImageBuild(img) {
+  clearBuildTimer(img);
+  img.status = "expired";
+  img.statusBadgeText = "Expires in 7 days";
+  delete img.buildProgress;
+  img.lastUpdated = formatBuildDate();
+  renderTable();
+}
+
+function advanceBuildProgress(img) {
+  const progress = img.buildProgress;
+  if (!progress) return;
+
+  if (progress.substep < progress.totalSubsteps - 1) {
+    progress.substep += 1;
+    return;
+  }
+
+  if (progress.step < progress.totalSteps - 1) {
+    progress.step += 1;
+    progress.substep = 0;
+    progress.totalSubsteps = BUILD_SUBSTEPS_PER_STEP[progress.step];
+    return;
+  }
+
+  completeImageBuild(img);
+}
+
+function runBuildProgress(img) {
+  clearBuildTimer(img);
+  img._buildTimer = setInterval(() => {
+    advanceBuildProgress(img);
+    if (img.buildProgress) syncBuildStatusCell(img);
+  }, BUILD_TICK_MS);
+}
+
+function startImageRebuild(imageIds) {
+  const ids = [...new Set(imageIds)].filter(Boolean);
+  if (!ids.length) return;
+
+  ids.forEach((id) => {
+    const img = state.images.find((i) => i.id === id);
+    if (!img || isImageBuilding(img)) return;
+
+    clearBuildTimer(img);
+    img.status = "pending";
+    img.statusBadgeText = "Image build is pending";
+    delete img.buildProgress;
+
+    img._buildPendingTimeout = setTimeout(() => {
+      img._buildPendingTimeout = null;
+      img.status = "progress";
+      img.statusBadgeText = "Image build in progress";
+      img.buildProgress = {
+        step: 0,
+        totalSteps: BUILD_TOTAL_STEPS,
+        substep: 0,
+        totalSubsteps: BUILD_SUBSTEPS_PER_STEP[0],
+      };
+      renderTable();
+      runBuildProgress(img);
+    }, BUILD_PENDING_MS);
+  });
+
+  renderTable();
+}
+
+function renderInstanceCell(img) {
+  const building = isImageBuilding(img);
+  if (img.instanceAction === "launch") {
+    if (building) {
+      return `<span class="table-instance-link table-instance-link--disabled">Launch instance</span>`;
+    }
+    return `<button type="button" class="pf-v6-c-button pf-m-link" data-launch="${img.id}">Launch instance</button>`;
+  }
+  if (building) {
+    return `<span class="table-instance-link table-instance-link--disabled">Download image</span>`;
+  }
+  return `<button type="button" class="pf-v6-c-button pf-m-link" data-download="${img.id}">Download image</button>`;
 }
 
 function getFilteredImages() {
@@ -913,18 +1052,16 @@ function renderTable() {
 
     tbody.innerHTML = pageItems
       .map((img) => {
-        const instanceLabel =
-          img.instanceAction === "launch"
-            ? `<button type="button" class="pf-v6-c-button pf-m-link" data-launch="${img.id}">Launch instance</button>`
-            : `<button type="button" class="pf-v6-c-button pf-m-link" data-download="${img.id}">Download image</button>`;
         const expanded = state.expanded.has(img.id);
         const selected = state.selected.has(img.id);
         const favoriteCellClass = img.favorited ? " pf-m-favorited" : "";
 
         const expandContentId = `expand-content-${img.id}`;
 
+        const buildingRowClass = isImageBuilding(img) ? " pf-m-building" : "";
+
         let rows = `
-          <tr class="pf-v6-c-table__tr${expanded ? " pf-m-expanded" : ""}" data-id="${img.id}">
+          <tr class="pf-v6-c-table__tr${expanded ? " pf-m-expanded" : ""}${buildingRowClass}" data-id="${img.id}">
             <td class="pf-v6-c-table__td pf-v6-c-table__toggle">
               <button type="button" class="pf-v6-c-button pf-m-plain${expanded ? " pf-m-expanded" : ""}" data-expand="${img.id}"
                 aria-expanded="${expanded}" aria-controls="${expandContentId}"
@@ -946,8 +1083,8 @@ function renderTable() {
             <td class="pf-v6-c-table__td" data-label="Last updated">${img.lastUpdated}</td>
             <td class="pf-v6-c-table__td" data-label="Operating system">${img.os}</td>
             <td class="pf-v6-c-table__td" data-label="Target environment">${img.target}</td>
-            <td class="pf-v6-c-table__td" data-label="Status">${renderStatusBadge(img.status, null, { img })}</td>
-            <td class="pf-v6-c-table__td" data-label="Instance">${instanceLabel}</td>
+            <td class="pf-v6-c-table__td table-col-status-cell" data-label="Status">${renderTableStatusCell(img)}</td>
+            <td class="pf-v6-c-table__td" data-label="Instance">${renderInstanceCell(img)}</td>
             <td class="pf-v6-c-table__td pf-v6-c-table__action">
               <div class="pf-kebab-wrap">
                 <button type="button" class="pf-v6-c-menu-toggle pf-m-plain pf-m-no-padding" data-kebab="${img.id}" aria-label="Actions for ${img.name}">
@@ -1025,7 +1162,7 @@ function bindTableEvents() {
       menu.innerHTML = `<ul class="pf-v6-c-menu__list">
         <li role="none"><button type="button" class="pf-v6-c-menu__item" role="menuitem" data-kebab-action="edit">Edit</button></li>
         <li role="none"><button type="button" class="pf-v6-c-menu__item" role="menuitem">Duplicate</button></li>
-        <li role="none"><button type="button" class="pf-v6-c-menu__item" role="menuitem">Rebuild</button></li>
+        <li role="none"><button type="button" class="pf-v6-c-menu__item" role="menuitem" data-kebab-action="rebuild">Rebuild</button></li>
         <li class="pf-v6-c-divider" role="separator"></li>
         <li role="none"><button type="button" class="pf-v6-c-menu__item" role="menuitem">Download image</button></li>
         <li role="none"><button type="button" class="pf-v6-c-menu__item" role="menuitem">Download blueprint (.json)</button></li>
@@ -1041,7 +1178,13 @@ function bindTableEvents() {
         openModal("build-image");
         closeAllMenus();
       });
-      menu.querySelectorAll(".pf-v6-c-menu__item:not(.pf-m-danger):not([data-kebab-action='edit'])").forEach((b) => {
+      menu.querySelector('[data-kebab-action="rebuild"]')?.addEventListener("click", () => {
+        startImageRebuild([id]);
+        closeAllMenus();
+      });
+      menu.querySelectorAll(
+        ".pf-v6-c-menu__item:not(.pf-m-danger):not([data-kebab-action='edit']):not([data-kebab-action='rebuild'])"
+      ).forEach((b) => {
         b.addEventListener("click", () => {
           showToast(`${b.textContent} — ${id} (prototype)`);
           closeAllMenus();
@@ -1411,10 +1554,12 @@ function init() {
     if (state.selected.size) openModal("build-image");
   });
 
-  ["#btn-duplicate", "#btn-rebuild"].forEach((sel) => {
-    $(sel)?.addEventListener("click", () => {
-      if (state.selected.size) showToast(`${sel.slice(5)} action on ${state.selected.size} item(s) (prototype)`);
-    });
+  $("#btn-rebuild")?.addEventListener("click", () => {
+    if (state.selected.size) startImageRebuild([...state.selected]);
+  });
+
+  $("#btn-duplicate")?.addEventListener("click", () => {
+    if (state.selected.size) showToast(`Duplicate action on ${state.selected.size} item(s) (prototype)`);
   });
 
   initImportModal();
