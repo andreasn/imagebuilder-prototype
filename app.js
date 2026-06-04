@@ -450,12 +450,26 @@ function getParentBuildPhaseState(parentStep, activeFlatIndex) {
   return "pending";
 }
 
-function renderBuildProgressMarker(phaseState) {
+/** PatternFly arc spinner (matches screencast2 / console image builder). */
+function renderPfSpinner({ size = "sm", decorative = false } = {}) {
+  const sizeClass = size ? ` pf-m-${size}` : "";
+  const a11y = decorative
+    ? ' aria-hidden="true"'
+    : ' role="progressbar" aria-label="Loading" aria-valuetext="Loading"';
+  return `<svg class="pf-v6-c-spinner${sizeClass}"${a11y} viewBox="0 0 100 100"><circle class="pf-v6-c-spinner__path" cx="50" cy="50" r="45" fill="none"></circle></svg>`;
+}
+
+/** Spinner centered inside the gray step circle (build progress popover). */
+function renderBuildProgressSpinner({ sub = false } = {}) {
+  return `<span class="build-progress-spinner${sub ? " build-progress-spinner--sub" : ""}" aria-hidden="true">${renderPfSpinner({ size: "", decorative: true })}</span>`;
+}
+
+function renderBuildProgressMarker(phaseState, { sub = false } = {}) {
   if (phaseState === "done") {
     return `<span class="build-progress-step__marker build-progress-step__marker--done" aria-hidden="true"><i class="fas fa-check"></i></span>`;
   }
   if (phaseState === "active") {
-    return `<span class="build-progress-step__marker build-progress-step__marker--active" aria-hidden="true"><i class="fas fa-spinner fa-spin"></i></span>`;
+    return `<span class="build-progress-step__marker build-progress-step__marker--active" aria-hidden="true">${renderBuildProgressSpinner({ sub })}</span>`;
   }
   return `<span class="build-progress-step__marker build-progress-step__marker--pending" aria-hidden="true"></span>`;
 }
@@ -468,7 +482,7 @@ function renderBuildProgressSteps(activeFlatIndex) {
         (child) => {
           const childState = getBuildPhaseState(child.id, activeFlatIndex);
           return `<li class="build-progress-step build-progress-step--sub build-progress-step--${childState}">
-            ${renderBuildProgressMarker(childState)}
+            ${renderBuildProgressMarker(childState, { sub: true })}
             <span class="build-progress-step__label">${escapeHtml(child.label)}</span>
           </li>`;
         }
@@ -488,7 +502,7 @@ function renderTableStatusCell(img) {
   if (isImageBuilding(img)) {
     return `<div class="table-status-cell table-status-cell--building">
       <span class="table-build-status">
-        <i class="fas fa-spinner fa-spin" aria-hidden="true"></i>
+        ${renderPfSpinner({ size: "sm" })}
         <span>${escapeHtml(getBuildTableStatus(img))}</span>
       </span>
     </div>`;
@@ -1141,7 +1155,7 @@ function renderBuildInfo(img) {
         ${dl(
           "Status",
           isImageBuilding(img)
-            ? `<span class="table-build-status"><i class="fas fa-spinner fa-spin" aria-hidden="true"></i><span>${escapeHtml(getBuildTableStatus(img))}</span></span>`
+            ? `<span class="table-build-status">${renderPfSpinner({ size: "sm" })}<span>${escapeHtml(getBuildTableStatus(img))}</span></span>`
             : renderStatusBadge(img.status, null, { forFilter: true })
         )}
       </dl>
