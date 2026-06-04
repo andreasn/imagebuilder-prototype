@@ -680,6 +680,11 @@ html.pf-modal-open {
   width: 3rem;
 }
 
+#images-table thead > .pf-v6-c-table__tr > :is(th, td),
+#images-table tbody > .pf-v6-c-table__tr:not(.pf-v6-c-table__expandable-row) > :is(th, td) {
+  vertical-align: middle;
+}
+
 #images-table :is(th, td).pf-v6-c-table__toggle,
 #images-table :is(th, td).pf-v6-c-table__check,
 #images-table :is(th, td).pf-v6-c-table__favorite {
@@ -691,25 +696,23 @@ html.pf-modal-open {
   vertical-align: middle;
 }
 
-#images-table .pf-v6-c-table__check label {
+#images-table .pf-v6-c-table__toggle .pf-v6-c-button,
+#images-table .pf-v6-c-table__check label,
+#images-table .pf-v6-c-table__favorite .pf-v6-c-button.pf-m-plain.pf-m-favorite {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   margin: 0;
-  line-height: 1lh;
-  margin-block-end: calc(var(--pf-v6-c-button--PaddingBlockEnd) * -1);
-  margin-block-start: calc(var(--pf-v6-c-button--PaddingBlockStart) * -1);
+  vertical-align: middle;
+}
+
+#images-table .pf-v6-c-table__check label {
+  line-height: 1;
 }
 
 #images-table .pf-v6-c-table__check input[type="checkbox"] {
   margin: 0;
-}
-
-/* Match PF toggle button vertical alignment for star button */
-#images-table .pf-v6-c-table__favorite .pf-v6-c-button.pf-m-plain.pf-m-favorite {
-  line-height: 1lh;
-  margin-block-end: calc(var(--pf-v6-c-button--PaddingBlockEnd) * -1);
-  margin-block-start: calc(var(--pf-v6-c-button--PaddingBlockStart) * -1);
+  vertical-align: middle;
 }
 
 /* Disable PF favorite microanimation in the table */
@@ -786,11 +789,6 @@ html.pf-modal-open {
   border-top: 8px solid #151515;
 }
 
-#images-table .pf-v6-c-table__tr.pf-m-building > .pf-v6-c-table__td {
-  min-height: 3.25rem;
-  vertical-align: middle;
-}
-
 #images-table .table-col-status-cell {
   width: 15rem;
   min-width: 15rem;
@@ -799,18 +797,17 @@ html.pf-modal-open {
   vertical-align: middle;
 }
 
-.table-status-cell {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.125rem;
-  width: 100%;
-  max-width: 100%;
-  overflow: hidden;
+#images-table tbody th.pf-v6-c-table__td[data-label="Name"] {
+  font-weight: var(--pf-t--global--font--weight--body--default, 400);
+  line-height: 1.25;
 }
 
-.table-status-cell--building {
-  justify-content: center;
+.table-status-cell {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  overflow: hidden;
+  vertical-align: middle;
 }
 
 .table-build-status {
@@ -850,6 +847,14 @@ html.pf-modal-open {
 #images-table .pf-v6-c-table__action {
   width: 1%;
   white-space: nowrap;
+  vertical-align: middle;
+}
+
+#images-table .pf-v6-c-table__action .pf-kebab-wrap,
+#images-table .pf-v6-c-table__action .pf-v6-c-menu-toggle {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
 }
 
 /* Table expander: chevron down when open (override PF -180deg on angle-right) */

@@ -1286,9 +1286,7 @@ function renderTable() {
             <td class="pf-v6-c-table__td pf-v6-c-table__favorite${favoriteCellClass}">
               ${renderFavoriteButton(img)}
             </td>
-            <th class="pf-v6-c-table__td" data-label="Name" scope="row">
-              <button type="button" class="pf-v6-c-button pf-m-link">${img.name}</button>
-            </th>
+            <th class="pf-v6-c-table__td" data-label="Name" scope="row">${escapeHtml(img.name)}</th>
             <td class="pf-v6-c-table__td" data-label="Last updated">${img.lastUpdated}</td>
             <td class="pf-v6-c-table__td" data-label="Operating system">${img.os}</td>
             <td class="pf-v6-c-table__td" data-label="Target environment">${img.target}</td>
