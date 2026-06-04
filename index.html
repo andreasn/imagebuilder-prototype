@@ -207,16 +207,170 @@
 
   <!-- Modals -->
   <div class="pf-v6-c-backdrop hidden" id="modal-backdrop" aria-hidden="true">
-  <div class="pf-v6-c-modal-box pf-m-lg hidden" id="modal-build-image" role="dialog" aria-modal="true" aria-labelledby="build-image-title">
-    <div class="pf-v6-c-modal-box__close">
-      <button type="button" class="pf-v6-c-button pf-m-plain" data-close aria-label="Close">
-        <span class="pf-v6-c-button__icon"><i class="fas fa-times" aria-hidden="true"></i></span>
-      </button>
-    </div>
-    <header class="pf-v6-c-modal-box__header">
-      <h1 class="pf-v6-c-modal-box__title" id="build-image-title">Image build dialog</h1>
+  <div class="pf-v6-c-modal-box pf-m-lg build-image-modal hidden" id="modal-build-image" role="dialog" aria-modal="true" aria-labelledby="build-image-title">
+    <header class="pf-v6-c-modal-box__header build-image-modal__header">
+      <div class="pf-v6-c-modal-box__close">
+        <button type="button" class="pf-v6-c-button pf-m-plain" data-close aria-label="Close">
+          <span class="pf-v6-c-button__icon"><i class="fas fa-times" aria-hidden="true"></i></span>
+        </button>
+      </div>
+      <div class="pf-v6-c-modal-box__header-main">
+        <h1 class="pf-v6-c-modal-box__title" id="build-image-title">Build an image</h1>
+        <p class="pf-v6-c-modal-box__description">
+          Create custom system images with your preferred configurations, packages, and settings. Build images for different target environments and deployment scenarios.
+        </p>
+      </div>
     </header>
-    <div class="pf-v6-c-modal-box__body"></div>
+    <div class="pf-v6-c-modal-box__body build-image-modal__body">
+      <div class="build-image-wizard">
+        <nav class="build-image-wizard__nav" aria-label="Build image steps">
+          <ol class="build-image-wizard__steps">
+            <li class="build-image-wizard__step build-image-wizard__step--current" aria-current="step">
+              <span class="build-image-wizard__step-marker" aria-hidden="true">1</span>
+              <span class="build-image-wizard__step-label">Base settings</span>
+            </li>
+            <li class="build-image-wizard__step">
+              <span class="build-image-wizard__step-marker" aria-hidden="true">2</span>
+              <span class="build-image-wizard__step-label">Repositories and packages</span>
+            </li>
+            <li class="build-image-wizard__step">
+              <span class="build-image-wizard__step-marker" aria-hidden="true">3</span>
+              <span class="build-image-wizard__step-label">Advanced settings</span>
+            </li>
+            <li class="build-image-wizard__step">
+              <span class="build-image-wizard__step-marker" aria-hidden="true">4</span>
+              <span class="build-image-wizard__step-label">Review</span>
+            </li>
+          </ol>
+        </nav>
+        <div class="build-image-wizard__content">
+          <section class="build-image-section">
+            <h2 class="build-image-section__title">Details</h2>
+            <p class="build-image-section__hint">Enter a name and description to identify your deployment-ready image.</p>
+            <div class="pf-v6-c-form">
+              <div class="pf-v6-c-form__group">
+                <label class="pf-v6-c-form__label pf-m-required" for="build-image-name">
+                  <span class="pf-v6-c-form__label-text">Name</span>
+                </label>
+                <div class="pf-v6-c-form-control pf-m-icon">
+                  <input type="text" id="build-image-name" value="rhel-10-x86_64-20240604-1322" aria-required="true" />
+                  <span class="pf-v6-c-form-control__utilities">
+                    <button type="button" class="pf-v6-c-button pf-m-control pf-m-plain" id="build-image-name-clear" aria-label="Clear name">
+                      <span class="pf-v6-c-button__icon"><i class="fas fa-times" aria-hidden="true"></i></span>
+                    </button>
+                  </span>
+                </div>
+              </div>
+              <div class="pf-v6-c-form__group">
+                <label class="pf-v6-c-form__label" for="build-image-description">
+                  <span class="pf-v6-c-form__label-text">Description</span>
+                </label>
+                <div class="pf-v6-c-form-control">
+                  <input type="text" id="build-image-description" placeholder="Add description" />
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <hr class="build-image-section__divider" />
+
+          <section class="build-image-section">
+            <h2 class="build-image-section__title">Image output</h2>
+            <p class="build-image-section__hint">
+              Select the release, architecture, and a target environment to build your image. Select any number of target environments to simultaneously build this image from.
+              <a href="https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux" target="_blank" rel="noopener">
+                Learn more about deploying and managing RHEL systems
+                <i class="fas fa-external-link-alt" aria-hidden="true"></i>
+              </a>
+            </p>
+            <div class="pf-v6-c-form">
+              <div class="pf-v6-c-form__group">
+                <label class="pf-v6-c-form__label pf-m-required">
+                  <span class="pf-v6-c-form__label-text">Image type</span>
+                </label>
+                <div class="pf-v6-c-toggle-group" role="group" aria-label="Image type">
+                  <button type="button" class="pf-v6-c-toggle-group__button pf-m-selected" aria-pressed="true">
+                    <span class="pf-v6-c-toggle-group__icon"><i class="fas fa-box" aria-hidden="true"></i></span>
+                    <span class="pf-v6-c-toggle-group__text">Package mode</span>
+                  </button>
+                  <button type="button" class="pf-v6-c-toggle-group__button" aria-pressed="false">
+                    <span class="pf-v6-c-toggle-group__icon"><i class="fas fa-compact-disc" aria-hidden="true"></i></span>
+                    <span class="pf-v6-c-toggle-group__text">Image mode</span>
+                  </button>
+                </div>
+                <p class="build-image-field-hint">RHEL in package mode is a system managed by individually installing and updating software packages.</p>
+              </div>
+              <div class="pf-v6-c-form__group">
+                <label class="pf-v6-c-form__label pf-m-required" for="build-image-release">
+                  <span class="pf-v6-c-form__label-text">Release</span>
+                </label>
+                <div class="pf-v6-c-form-control">
+                  <select id="build-image-release" aria-required="true">
+                    <option selected>Red Hat Enterprise Linux (RHEL) 10</option>
+                    <option>Red Hat Enterprise Linux (RHEL) 9</option>
+                    <option>Red Hat Enterprise Linux (RHEL) 8</option>
+                  </select>
+                </div>
+              </div>
+              <div class="pf-v6-c-form__group">
+                <label class="pf-v6-c-form__label pf-m-required" for="build-image-architecture">
+                  <span class="pf-v6-c-form__label-text">Architecture</span>
+                </label>
+                <div class="pf-v6-c-form-control">
+                  <select id="build-image-architecture" aria-required="true">
+                    <option selected>x86_64</option>
+                    <option>aarch64</option>
+                  </select>
+                </div>
+              </div>
+              <div class="pf-v6-c-form__group">
+                <label class="pf-v6-c-form__label pf-m-required">
+                  <span class="pf-v6-c-form__label-text">Target environments</span>
+                </label>
+                <p class="build-image-field-hint build-image-field-hint--tight">Select one or more target environments for this image.</p>
+                <p class="build-image-target-category">Public cloud</p>
+                <ul class="build-image-target-list">
+                  <li>
+                    <label class="pf-v6-c-check">
+                      <input class="pf-v6-c-check__input" type="checkbox" name="build-target" value="aws" />
+                      <span class="pf-v6-c-check__label">Amazon Web Services</span>
+                    </label>
+                  </li>
+                  <li>
+                    <label class="pf-v6-c-check">
+                      <input class="pf-v6-c-check__input" type="checkbox" name="build-target" value="gcp" />
+                      <span class="pf-v6-c-check__label">Google Cloud</span>
+                    </label>
+                  </li>
+                  <li>
+                    <label class="pf-v6-c-check">
+                      <input class="pf-v6-c-check__input" type="checkbox" name="build-target" value="azure" />
+                      <span class="pf-v6-c-check__label">Microsoft Azure</span>
+                    </label>
+                  </li>
+                  <li>
+                    <label class="pf-v6-c-check">
+                      <input class="pf-v6-c-check__input" type="checkbox" name="build-target" value="oci" />
+                      <span class="pf-v6-c-check__label">Oracle Cloud Infrastructure</span>
+                    </label>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+    <footer class="pf-v6-c-modal-box__footer build-image-modal__footer">
+      <div class="pf-v6-c-action-list pf-m-align-right pf-m-nowrap">
+        <div class="pf-v6-c-action-list__group">
+          <button type="button" class="pf-v6-c-button pf-m-secondary" disabled>Back</button>
+          <button type="button" class="pf-v6-c-button pf-m-secondary" disabled>Next</button>
+          <button type="button" class="pf-v6-c-button pf-m-secondary" disabled>Review image</button>
+          <button type="button" class="pf-v6-c-button pf-m-link" data-close>Cancel</button>
+        </div>
+      </div>
+    </footer>
   </div>
 
   <div class="pf-v6-c-modal-box pf-m-lg hidden" id="modal-download-rhel" role="dialog" aria-modal="true" aria-labelledby="download-rhel-title">

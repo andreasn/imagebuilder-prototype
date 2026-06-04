@@ -1473,32 +1473,26 @@ function renderIsoCards(containerId, titles) {
   });
 }
 
-function measureModalHeight(modalEl) {
-  if (!modalEl) return 0;
+function initBuildImageModal() {
+  const nameInput = $("#build-image-name");
+  $("#build-image-name-clear")?.addEventListener("click", () => {
+    if (nameInput) {
+      nameInput.value = "";
+      nameInput.focus();
+    }
+  });
 
-  const hadHidden = modalEl.classList.contains("hidden");
-  const restore = {
-    visibility: modalEl.style.visibility,
-    pointerEvents: modalEl.style.pointerEvents,
-    position: modalEl.style.position,
-    left: modalEl.style.left,
-  };
-
-  modalEl.classList.remove("hidden");
-  modalEl.style.visibility = "hidden";
-  modalEl.style.pointerEvents = "none";
-  modalEl.style.position = "absolute";
-  modalEl.style.left = "-9999px";
-
-  const height = modalEl.offsetHeight;
-
-  if (hadHidden) modalEl.classList.add("hidden");
-  modalEl.style.visibility = restore.visibility;
-  modalEl.style.pointerEvents = restore.pointerEvents;
-  modalEl.style.position = restore.position;
-  modalEl.style.left = restore.left;
-
-  return height;
+  $("#modal-build-image")?.querySelectorAll(".pf-v6-c-toggle-group__button").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const group = btn.closest(".pf-v6-c-toggle-group");
+      group?.querySelectorAll(".pf-v6-c-toggle-group__button").forEach((b) => {
+        b.classList.remove("pf-m-selected");
+        b.setAttribute("aria-pressed", "false");
+      });
+      btn.classList.add("pf-m-selected");
+      btn.setAttribute("aria-pressed", "true");
+    });
+  });
 }
 
 function openModal(id) {
@@ -1509,12 +1503,6 @@ function openModal(id) {
   modal.classList.remove("hidden");
   document.documentElement.classList.add("pf-modal-open");
 
-  if (id === "build-image") {
-    const downloadModal = $("#modal-download-rhel");
-    const height = measureModalHeight(downloadModal);
-    if (height) modal.style.minHeight = `${height}px`;
-  }
-
   modal.focus?.();
 }
 
@@ -1522,7 +1510,6 @@ function closeModals() {
   $("#modal-backdrop").classList.add("hidden");
   $$("#modal-backdrop .pf-v6-c-modal-box").forEach((m) => {
     m.classList.add("hidden");
-    if (m.id === "modal-build-image") m.style.minHeight = "";
   });
   $("#details-popover").classList.add("hidden");
   document.documentElement.classList.remove("pf-modal-open");
@@ -1784,6 +1771,7 @@ function init() {
   });
 
   initImportModal();
+  initBuildImageModal();
 
   const closeMenusOnScroll = () => {
     if (state.openKebab) closeAllMenus();
