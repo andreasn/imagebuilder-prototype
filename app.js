@@ -547,6 +547,54 @@ function deleteImage(id) {
   showToast(`${img.name} deleted`);
 }
 
+function imageIdFromName(name) {
+  const base = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "image";
+  let id = base;
+  let n = 2;
+  while (state.images.some((i) => i.id === id)) {
+    id = `${base}-${n}`;
+    n += 1;
+  }
+  return id;
+}
+
+function duplicateImage(sourceId) {
+  const sourceIndex = state.images.findIndex((i) => i.id === sourceId);
+  if (sourceIndex < 0) return null;
+
+  const source = state.images[sourceIndex];
+  const copy = JSON.parse(JSON.stringify(source));
+  copy.name = `${source.name}-copy`;
+  copy.id = imageIdFromName(copy.name);
+  delete copy.buildPhaseIndex;
+
+  state.images.splice(sourceIndex + 1, 0, copy);
+  return copy;
+}
+
+function duplicateImages(imageIds) {
+  const ids = [...new Set(imageIds)].filter(Boolean);
+  const sources = ids
+    .map((id) => ({ id, index: state.images.findIndex((i) => i.id === id) }))
+    .filter((x) => x.index >= 0)
+    .sort((a, b) => b.index - a.index);
+
+  const copies = [];
+  sources.forEach(({ id }) => {
+    const copy = duplicateImage(id);
+    if (copy) copies.push(copy);
+  });
+
+  if (!copies.length) return;
+
+  renderTable();
+  if (copies.length === 1) {
+    showToast(`${copies[0].name} created`);
+  } else {
+    showToast(`${copies.length} images duplicated`);
+  }
+}
+
 function isImageBuilding(img) {
   return typeof img.buildPhaseIndex === "number";
 }
@@ -1322,7 +1370,7 @@ function bindTableEvents() {
       menu.className = "pf-kebab-menu pf-v6-c-menu";
       menu.innerHTML = `<ul class="pf-v6-c-menu__list">
         <li role="none"><button type="button" class="pf-v6-c-menu__item" role="menuitem" data-kebab-action="edit">Edit</button></li>
-        <li role="none"><button type="button" class="pf-v6-c-menu__item" role="menuitem">Duplicate</button></li>
+        <li role="none"><button type="button" class="pf-v6-c-menu__item" role="menuitem" data-kebab-action="duplicate">Duplicate</button></li>
         <li role="none"><button type="button" class="pf-v6-c-menu__item" role="menuitem" data-kebab-action="rebuild">Rebuild</button></li>
         <li class="pf-v6-c-divider" role="separator"></li>
         <li role="none"><button type="button" class="pf-v6-c-menu__item" role="menuitem">Download image</button></li>
@@ -1343,8 +1391,12 @@ function bindTableEvents() {
         startImageRebuild([id]);
         closeAllMenus();
       });
+      menu.querySelector('[data-kebab-action="duplicate"]')?.addEventListener("click", () => {
+        duplicateImages([id]);
+        closeAllMenus();
+      });
       menu.querySelectorAll(
-        ".pf-v6-c-menu__item:not(.pf-m-danger):not([data-kebab-action='edit']):not([data-kebab-action='rebuild'])"
+        ".pf-v6-c-menu__item:not(.pf-m-danger):not([data-kebab-action='edit']):not([data-kebab-action='rebuild']):not([data-kebab-action='duplicate'])"
       ).forEach((b) => {
         b.addEventListener("click", () => {
           showToast(`${b.textContent} — ${id} (prototype)`);
@@ -1730,7 +1782,7 @@ function init() {
   });
 
   $("#btn-duplicate")?.addEventListener("click", () => {
-    if (state.selected.size) showToast(`Duplicate action on ${state.selected.size} item(s) (prototype)`);
+    if (state.selected.size) duplicateImages([...state.selected]);
   });
 
   initImportModal();
