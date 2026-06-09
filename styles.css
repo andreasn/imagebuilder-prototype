@@ -175,6 +175,132 @@
   overflow: auto;
 }
 
+#modal-launch {
+  --launch-util-bg: #f5f5f5;
+  --launch-util-bg-hover: #ededed;
+  --launch-util-border: #d2d2d2;
+  --launch-util-icon: #6a6e73;
+  --launch-util-size: 2.25rem;
+}
+
+#modal-launch .launch-command-field {
+  max-width: 100%;
+  width: 100%;
+}
+
+#modal-launch .launch-command-field__row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+#modal-launch .launch-command-field__input {
+  flex: 1 1 auto;
+  min-width: 0;
+  background: #f5f5f5;
+}
+
+#modal-launch .launch-command-field__expand {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--launch-util-size);
+  height: var(--launch-util-size);
+  min-height: var(--launch-util-size);
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--launch-util-border);
+  border-radius: 4px;
+  background: #fff;
+  cursor: pointer;
+  color: var(--launch-util-icon);
+}
+
+#modal-launch .launch-command-field__expand:hover {
+  background: #f5f5f5;
+}
+
+#modal-launch .launch-command-field__expand i {
+  font-size: 0.875rem;
+  line-height: 1;
+}
+
+#modal-launch .launch-command-field--expandable {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  column-gap: 0.5rem;
+  row-gap: 0.5rem;
+  align-items: center;
+}
+
+#modal-launch .launch-command-field--expandable .launch-command-field__row {
+  display: contents;
+}
+
+#modal-launch .launch-command-field--expandable .launch-command-field__expanded {
+  grid-column: 1 / -1;
+  margin: 0;
+  width: 100%;
+  min-width: 0;
+}
+
+#modal-launch .launch-command-field__expanded-control {
+  width: 100%;
+  background: #fff;
+  border: 1px solid var(--launch-util-border);
+  border-radius: 4px;
+  overflow: visible;
+}
+
+#modal-launch .launch-command-field__expanded-text {
+  width: 100%;
+  height: auto;
+  min-height: 0;
+  padding: 0.5rem 0.75rem;
+  border: none;
+  background: #fff;
+  font-family: var(--pf-t--global--font--family--mono, ui-monospace, monospace);
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow: hidden;
+  resize: none;
+  color: #151515;
+}
+
+#modal-launch .launch-command-field__input input {
+  height: var(--launch-util-size);
+  background: #f5f5f5;
+  font-family: var(--pf-t--global--font--family--mono, ui-monospace, monospace);
+  font-size: 0.875rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#modal-launch .launch-command-field__copy {
+  flex-shrink: 0;
+  width: var(--launch-util-size);
+  height: var(--launch-util-size);
+  min-height: var(--launch-util-size);
+  border-radius: 4px;
+  background: #fff;
+  border: 1px solid var(--launch-util-border);
+}
+
+#modal-launch .launch-command-field__copy:hover {
+  background: #f5f5f5;
+}
+
+#modal-launch .launch-command-field__copy i {
+  font-size: 1rem;
+  color: var(--launch-util-icon);
+}
+
 #modal-launch .pf-v6-c-modal-box__body ol {
   margin: 0;
   padding-inline-start: var(--pf-t--global--spacer--lg);

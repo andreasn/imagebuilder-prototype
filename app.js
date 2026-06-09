@@ -25,7 +25,7 @@ const IMAGES = [
     status: "expired",
     statusBadgeText: "Expires in 6 hours",
     favorited: false,
-    instanceAction: "download",
+    instanceAction: "launch",
   },
   {
     id: "notification-service",
@@ -35,7 +35,7 @@ const IMAGES = [
     target: "GCP",
     status: "failed",
     favorited: true,
-    instanceAction: "download",
+    instanceAction: "launch",
   },
   {
     id: "api-backend",
@@ -72,7 +72,7 @@ const IMAGES = [
     target: "GCP",
     status: "expired",
     favorited: false,
-    instanceAction: "download",
+    instanceAction: "launch",
   },
   {
     id: "demo-environment",
@@ -1523,19 +1523,99 @@ function isDismissOnlyByCloseModalOpen() {
   );
 }
 
-function launchCodeBlock(code) {
-  return `
-    <div class="pf-v6-c-code-block pf-v6-u-mt-sm">
-      <div class="pf-v6-c-code-block__header">
-        <div class="pf-v6-c-code-block__actions">
-          <button type="button" class="pf-v6-c-button pf-m-plain btn-copy" data-copy="${escapeAttr(code)}" aria-label="Copy">
-            <span class="pf-v6-c-button__icon"><i class="fas fa-copy" aria-hidden="true"></i></span>
-          </button>
+const GCP_IMAGE_CMD_TEMPLATE =
+  "gcloud compute images create <desired_image_name_placeholder> --source-image-project red-hat-image-builder";
+const GCP_IMAGE_NAME_PLACEHOLDER = "<desired_image_name_placeholder>";
+
+function buildGcpImageCommand(projectId) {
+  const name = projectId.trim() || GCP_IMAGE_NAME_PLACEHOLDER;
+  return GCP_IMAGE_CMD_TEMPLATE.replace(GCP_IMAGE_NAME_PLACEHOLDER, name);
+}
+
+function resizeLaunchExpandedText(textarea) {
+  if (!textarea) return;
+  textarea.style.height = "auto";
+  textarea.style.height = `${textarea.scrollHeight}px`;
+}
+
+function syncGcpLaunchImageCommand() {
+  const projectInput = $("#launch-gcp-project-id");
+  const field = $("#launch-gcp-image-cmd-field");
+  if (!projectInput || !field) return;
+
+  const cmd = buildGcpImageCommand(projectInput.value);
+  const input = field.querySelector(".launch-command-field__input input");
+  const expandedText = field.querySelector(".launch-command-field__expanded-text");
+  const expandedPanel = field.querySelector(".launch-command-field__expanded");
+  const copyBtn = field.querySelector(".launch-command-field__copy");
+  if (input) input.value = cmd;
+  if (expandedText) {
+    expandedText.value = cmd;
+    if (expandedPanel && !expandedPanel.classList.contains("hidden")) {
+      resizeLaunchExpandedText(expandedText);
+    }
+  }
+  if (copyBtn) copyBtn.dataset.copy = cmd;
+}
+
+function bindLaunchCommandExpanders(root) {
+  root.querySelectorAll(".launch-command-field__expand").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const field = btn.closest(".launch-command-field");
+      const panel = field?.querySelector(".launch-command-field__expanded");
+      const input = field?.querySelector(".launch-command-field__input input");
+      const expandedText = field?.querySelector(".launch-command-field__expanded-text");
+      const icon = btn.querySelector("i");
+      if (!panel || !input || !expandedText) return;
+
+      const isExpanded = !panel.classList.contains("hidden");
+      if (isExpanded) {
+        panel.classList.add("hidden");
+        panel.setAttribute("aria-hidden", "true");
+        btn.setAttribute("aria-expanded", "false");
+        btn.classList.remove("pf-m-expanded");
+        if (icon) icon.className = "fas fa-angle-right";
+        return;
+      }
+
+      expandedText.value = input.value;
+      panel.classList.remove("hidden");
+      panel.setAttribute("aria-hidden", "false");
+      btn.setAttribute("aria-expanded", "true");
+      btn.classList.add("pf-m-expanded");
+      if (icon) icon.className = "fas fa-angle-down";
+      requestAnimationFrame(() => resizeLaunchExpandedText(expandedText));
+    });
+  });
+}
+
+function launchCommandField(code, { id = "", expandable = false } = {}) {
+  const idAttr = id ? ` id="${escapeAttr(id)}"` : "";
+  const expandBtn = expandable
+    ? `<button type="button" class="launch-command-field__expand" aria-expanded="false" aria-label="Expand command">
+        <i class="fas fa-angle-right" aria-hidden="true"></i>
+      </button>`
+    : "";
+  const expandedPanel = expandable
+    ? `<div class="launch-command-field__expanded hidden" aria-hidden="true">
+        <div class="pf-v6-c-form-control pf-m-readonly launch-command-field__expanded-control">
+          <textarea class="launch-command-field__expanded-text" readonly rows="1" aria-label="Full command">${escapeHtml(code)}</textarea>
         </div>
+      </div>`
+    : "";
+
+  return `
+    <div class="launch-command-field pf-v6-u-mt-sm${expandable ? " launch-command-field--expandable" : ""}"${idAttr}>
+      <div class="launch-command-field__row">
+        ${expandBtn}
+        <div class="pf-v6-c-form-control launch-command-field__input">
+          <input type="text" value="${escapeAttr(code)}" readonly aria-label="Command" />
+        </div>
+        <button type="button" class="masthead-util-btn masthead-util-btn--icon launch-command-field__copy btn-copy" data-copy="${escapeAttr(code)}" aria-label="Copy command">
+          <i class="fas fa-copy" aria-hidden="true"></i>
+        </button>
       </div>
-      <div class="pf-v6-c-code-block__content">
-        <pre class="pf-v6-c-code-block__pre"><code>${code}</code></pre>
-      </div>
+      ${expandedPanel}
     </div>`;
 }
 
@@ -1545,8 +1625,6 @@ function openLaunchModal(img, provider) {
   const title = $("#launch-title");
   const description = $("#launch-description");
   const body = $("#launch-body");
-  const gcloudCmd = `gcloud compute images create ${img.name} --source-image-project red-hat-image-builder`;
-
   const providers = {
     aws: {
       title: "Launch with Amazon Web Services",
@@ -1567,9 +1645,8 @@ function openLaunchModal(img, provider) {
       title: "Launch with Microsoft Azure",
       html: `
         <ol>
-          <li>Locate <strong>${img.name}</strong> on the <a href="https://portal.azure.com" target="_blank" rel="noopener">Azure console <i class="fas fa-external-link-alt pf-v6-u-ml-xs" aria-hidden="true"></i></a>.</li>
-          <li>Create a Virtual Machine (VM) by using the shared image.<br>
-            <em>Note: Review the Availability Zone and the Size to meet your requirements. Adjust these settings as needed.</em></li>
+          <li>Locate <strong>${escapeHtml(img.name)}</strong> on the <a href="https://portal.azure.com" target="_blank" rel="noopener">Azure console <i class="fas fa-external-link-alt pf-v6-u-ml-xs" aria-hidden="true"></i></a>.</li>
+          <li>Create a Virtual Machine (VM) by using the shared image.<br><br>Note: Review the Availability Zone and the Size to meet your requirements. Adjust these settings as needed.</li>
         </ol>`,
     },
     gcp: {
@@ -1577,16 +1654,16 @@ function openLaunchModal(img, provider) {
       html: `
         <ol>
           <li>Install the gcloud CLI and login. See the <a href="https://cloud.google.com/sdk/docs/install" target="_blank" rel="noopener">Install gcloud CLI <i class="fas fa-external-link-alt pf-v6-u-ml-xs" aria-hidden="true"></i></a> documentation.
-            ${launchCodeBlock("sudo dnf install google-cloud-cli")}
+            ${launchCommandField("sudo dnf install google-cloud-cli")}
           </li>
-          <li>Authorize gcloud CLI to the following account: <strong>anilsson@redhat.com</strong></li>
-          <li>Enter your project ID to create the image in your project.
+          <li>Authorize gcloud CLI to the following account: <strong>anilsson@redhat.com</strong>,</li>
+          <li>Enter your project ID to create the image in your project,
             <div class="pf-v6-c-form-control pf-v6-u-mt-sm">
-              <input type="text" placeholder="project ID" aria-label="project ID" />
+              <input type="text" id="launch-gcp-project-id" placeholder="project ID" aria-label="project ID" />
             </div>
-            ${launchCodeBlock(gcloudCmd)}
+            ${launchCommandField(buildGcpImageCommand(""), { id: "launch-gcp-image-cmd-field", expandable: true })}
           </li>
-          <li>Create an instance of your image by either accessing the <a href="https://console.cloud.google.com/compute/instances" target="_blank" rel="noopener">GCP console <i class="fas fa-external-link-alt pf-v6-u-ml-xs" aria-hidden="true"></i></a> or by running the gcloud command.</li>
+          <li>Create an instance of your image by either accessing the <a href="https://console.cloud.google.com/compute/instances" target="_blank" rel="noopener">GCP console <i class="fas fa-external-link-alt pf-v6-u-ml-xs" aria-hidden="true"></i></a> or by running the following command:</li>
         </ol>`,
     },
     oci: {
@@ -1614,6 +1691,13 @@ function openLaunchModal(img, provider) {
       showToast("Copied to clipboard");
     });
   });
+  bindLaunchCommandExpanders(body);
+
+  if (target === "gcp") {
+    $("#launch-gcp-project-id")?.addEventListener("input", syncGcpLaunchImageCommand);
+    syncGcpLaunchImageCommand();
+  }
+
   openModal("launch");
 }
 
