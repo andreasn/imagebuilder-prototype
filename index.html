@@ -244,6 +244,7 @@
           </ol>
         </nav>
         <div class="build-image-wizard__content">
+          <div class="build-image-wizard__panel" id="build-image-panel-base">
           <section class="build-image-section">
             <h2 class="build-image-section__title">Details</h2>
             <p class="build-image-section__hint">Enter a name and description to identify your deployment-ready image.</p>
@@ -283,90 +284,845 @@
                 <i class="fas fa-external-link-alt" aria-hidden="true"></i>
               </a>
             </p>
-            <div class="pf-v6-c-form">
-              <div class="pf-v6-c-form__group">
-                <label class="pf-v6-c-form__label pf-m-required">
-                  <span class="pf-v6-c-form__label-text">Image type</span>
-                </label>
-                <div class="pf-v6-c-toggle-group" role="group" aria-label="Image type">
-                  <button type="button" class="pf-v6-c-toggle-group__button pf-m-selected" aria-pressed="true">
-                    <span class="pf-v6-c-toggle-group__icon"><i class="fas fa-box" aria-hidden="true"></i></span>
-                    <span class="pf-v6-c-toggle-group__text">Package mode</span>
-                  </button>
-                  <button type="button" class="pf-v6-c-toggle-group__button" aria-pressed="false">
-                    <span class="pf-v6-c-toggle-group__icon"><i class="fas fa-compact-disc" aria-hidden="true"></i></span>
-                    <span class="pf-v6-c-toggle-group__text">Image mode</span>
-                  </button>
-                </div>
-                <p class="build-image-field-hint">RHEL in package mode is a system managed by individually installing and updating software packages.</p>
-              </div>
+            <div class="pf-v6-c-form build-image-output-form">
               <div class="pf-v6-c-form__group">
                 <label class="pf-v6-c-form__label pf-m-required" for="build-image-release">
                   <span class="pf-v6-c-form__label-text">Release</span>
                 </label>
-                <div class="pf-v6-c-form-control">
+                <div class="pf-v6-c-form-control build-image-select-control">
                   <select id="build-image-release" aria-required="true">
-                    <option selected>Red Hat Enterprise Linux (RHEL) 10</option>
-                    <option>Red Hat Enterprise Linux (RHEL) 9</option>
+                    <option>Red Hat Enterprise Linux (RHEL) 10</option>
+                    <option selected>Red Hat Enterprise Linux (RHEL) 9</option>
                     <option>Red Hat Enterprise Linux (RHEL) 8</option>
                   </select>
+                  <span class="build-image-select-caret" aria-hidden="true"><i class="fas fa-angle-down"></i></span>
                 </div>
+                <p class="build-image-field-hint">The latest version is selected by default.</p>
               </div>
               <div class="pf-v6-c-form__group">
                 <label class="pf-v6-c-form__label pf-m-required" for="build-image-architecture">
                   <span class="pf-v6-c-form__label-text">Architecture</span>
                 </label>
-                <div class="pf-v6-c-form-control">
+                <div class="pf-v6-c-form-control build-image-select-control">
                   <select id="build-image-architecture" aria-required="true">
                     <option selected>x86_64</option>
                     <option>aarch64</option>
                   </select>
+                  <span class="build-image-select-caret" aria-hidden="true"><i class="fas fa-angle-down"></i></span>
                 </div>
-              </div>
-              <div class="pf-v6-c-form__group">
-                <label class="pf-v6-c-form__label pf-m-required">
-                  <span class="pf-v6-c-form__label-text">Target environments</span>
-                </label>
-                <p class="build-image-field-hint build-image-field-hint--tight">Select one or more target environments for this image.</p>
-                <p class="build-image-target-category">Public cloud</p>
-                <ul class="build-image-target-list">
-                  <li>
-                    <label class="pf-v6-c-check">
-                      <input class="pf-v6-c-check__input" type="checkbox" name="build-target" value="aws" />
-                      <span class="pf-v6-c-check__label">Amazon Web Services</span>
-                    </label>
-                  </li>
-                  <li>
-                    <label class="pf-v6-c-check">
-                      <input class="pf-v6-c-check__input" type="checkbox" name="build-target" value="gcp" />
-                      <span class="pf-v6-c-check__label">Google Cloud</span>
-                    </label>
-                  </li>
-                  <li>
-                    <label class="pf-v6-c-check">
-                      <input class="pf-v6-c-check__input" type="checkbox" name="build-target" value="azure" />
-                      <span class="pf-v6-c-check__label">Microsoft Azure</span>
-                    </label>
-                  </li>
-                  <li>
-                    <label class="pf-v6-c-check">
-                      <input class="pf-v6-c-check__input" type="checkbox" name="build-target" value="oci" />
-                      <span class="pf-v6-c-check__label">Oracle Cloud Infrastructure</span>
-                    </label>
-                  </li>
-                </ul>
               </div>
             </div>
           </section>
+
+          <hr class="build-image-section__divider" />
+
+          <section class="build-image-section">
+            <h2 class="build-image-section__title build-image-section__title--required">Target environment</h2>
+            <p class="build-image-section__hint build-image-target-env__intro">Select one or more target environments for this image.</p>
+
+            <div class="build-image-target-env">
+              <h3 class="build-image-target-category">Public cloud</h3>
+
+              <div class="build-image-target-item">
+                <label class="pf-v6-c-check build-image-target-check">
+                  <input class="pf-v6-c-check__input" type="checkbox" name="build-target" value="aws" />
+                  <span class="pf-v6-c-check__label">Amazon Web Services</span>
+                </label>
+                <div class="build-image-target-nested hidden" aria-hidden="true">
+                  <div class="build-image-target-row">
+                    <div class="pf-v6-c-form__group">
+                      <label class="pf-v6-c-form__label pf-m-required" for="build-image-aws-account">
+                        <span class="pf-v6-c-form__label-text">AWS account ID</span>
+                      </label>
+                      <div class="pf-v6-c-form-control pf-m-icon">
+                        <input type="text" id="build-image-aws-account" value="1234567890101" />
+                        <span class="pf-v6-c-form-control__utilities">
+                          <button type="button" class="pf-v6-c-button pf-m-control pf-m-plain" aria-label="Clear AWS account ID">
+                            <span class="pf-v6-c-button__icon"><i class="fas fa-times" aria-hidden="true"></i></span>
+                          </button>
+                        </span>
+                      </div>
+                    </div>
+                    <div class="pf-v6-c-form__group">
+                      <label class="pf-v6-c-form__label" for="build-image-aws-region">
+                        <span class="pf-v6-c-form__label-text">Default region</span>
+                      </label>
+                      <div class="pf-v6-c-form-control">
+                        <input type="text" id="build-image-aws-region" value="us-east-1" readonly />
+                      </div>
+                    </div>
+                  </div>
+                  <p class="build-image-field-hint">Images are built in the default region but can be copied to other regions later.</p>
+                </div>
+              </div>
+
+              <div class="build-image-target-item">
+                <label class="pf-v6-c-check build-image-target-check">
+                  <input class="pf-v6-c-check__input" type="checkbox" name="build-target" value="gcp" />
+                  <span class="pf-v6-c-check__label">Google Cloud Platform</span>
+                </label>
+                <div class="build-image-target-nested hidden" aria-hidden="true">
+                  <fieldset class="build-image-target-fieldset">
+                    <legend class="pf-v6-c-form__label pf-m-required">
+                      <span class="pf-v6-c-form__label-text">Select image sharing</span>
+                    </legend>
+                    <div class="build-image-radio-group" role="radiogroup" aria-label="Select image sharing">
+                      <label class="pf-v6-c-radio build-image-radio">
+                        <input class="pf-v6-c-radio__input" type="radio" name="build-image-gcp-sharing" value="account" checked />
+                        <span class="pf-v6-c-radio__label">Share with a Google account</span>
+                      </label>
+                      <label class="pf-v6-c-radio build-image-radio">
+                        <input class="pf-v6-c-radio__input" type="radio" name="build-image-gcp-sharing" value="insights" />
+                        <span class="pf-v6-c-radio__label">Share with Red Hat Insights only</span>
+                      </label>
+                    </div>
+                  </fieldset>
+                  <div class="pf-v6-c-form__group">
+                    <label class="pf-v6-c-form__label pf-m-required" for="build-image-gcp-account-type">
+                      <span class="pf-v6-c-form__label-text">GCP account type</span>
+                    </label>
+                    <div class="pf-v6-c-form-control build-image-select-control">
+                      <select id="build-image-gcp-account-type">
+                        <option selected>Google account</option>
+                      </select>
+                      <span class="build-image-select-caret" aria-hidden="true"><i class="fas fa-angle-down"></i></span>
+                    </div>
+                  </div>
+                  <div class="pf-v6-c-form__group">
+                    <label class="pf-v6-c-form__label pf-m-required" for="build-image-gcp-principal">
+                      <span class="pf-v6-c-form__label-text">Principal</span>
+                    </label>
+                    <div class="pf-v6-c-form-control pf-m-icon">
+                      <input type="text" id="build-image-gcp-principal" value="user@example.com" />
+                      <span class="pf-v6-c-form-control__utilities">
+                        <button type="button" class="pf-v6-c-button pf-m-control pf-m-plain" aria-label="Clear principal">
+                          <span class="pf-v6-c-button__icon"><i class="fas fa-times" aria-hidden="true"></i></span>
+                        </button>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="build-image-target-item">
+                <label class="pf-v6-c-check build-image-target-check">
+                  <input class="pf-v6-c-check__input" type="checkbox" name="build-target" value="azure" />
+                  <span class="pf-v6-c-check__label">Microsoft Azure</span>
+                </label>
+                <div class="build-image-target-nested hidden" aria-hidden="true">
+                  <div class="pf-v6-c-form__group">
+                    <label class="pf-v6-c-form__label" for="build-image-azure-hyperv">
+                      <span class="pf-v6-c-form__label-text">Hyper-V generation</span>
+                    </label>
+                    <div class="pf-v6-c-form-control build-image-select-control">
+                      <select id="build-image-azure-hyperv">
+                        <option selected>Generation 2 (BIOS)</option>
+                      </select>
+                      <span class="build-image-select-caret" aria-hidden="true"><i class="fas fa-angle-down"></i></span>
+                    </div>
+                  </div>
+                  <div class="pf-v6-c-form__group">
+                    <label class="pf-v6-c-form__label pf-m-required" for="build-image-azure-tenant">
+                      <span class="pf-v6-c-form__label-text">Azure tenant GUID</span>
+                    </label>
+                    <div class="pf-v6-c-form-control">
+                      <input type="text" id="build-image-azure-tenant" placeholder="Enter Azure tenant GUID" />
+                    </div>
+                  </div>
+                  <button type="button" class="pf-v6-c-button pf-m-primary pf-m-small">Authorize Image Builder</button>
+                  <div class="pf-v6-c-form__group">
+                    <label class="pf-v6-c-form__label pf-m-required" for="build-image-azure-subscription">
+                      <span class="pf-v6-c-form__label-text">Subscription ID</span>
+                    </label>
+                    <div class="pf-v6-c-form-control">
+                      <input type="text" id="build-image-azure-subscription" placeholder="Enter subscription ID" />
+                    </div>
+                  </div>
+                  <div class="pf-v6-c-form__group">
+                    <label class="pf-v6-c-form__label pf-m-required" for="build-image-azure-resource-group">
+                      <span class="pf-v6-c-form__label-text">Resource group</span>
+                    </label>
+                    <div class="pf-v6-c-form-control pf-m-icon">
+                      <input type="text" id="build-image-azure-resource-group" value="my-resource-group" />
+                      <span class="pf-v6-c-form-control__utilities">
+                        <button type="button" class="pf-v6-c-button pf-m-control pf-m-plain" aria-label="Clear resource group">
+                          <span class="pf-v6-c-button__icon"><i class="fas fa-times" aria-hidden="true"></i></span>
+                        </button>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="build-image-target-item">
+                <label class="pf-v6-c-check build-image-target-check">
+                  <input class="pf-v6-c-check__input" type="checkbox" name="build-target" value="oci" />
+                  <span class="pf-v6-c-check__label">Oracle Cloud Infrastructure</span>
+                </label>
+              </div>
+
+              <h3 class="build-image-target-category">Private cloud</h3>
+              <ul class="build-image-target-list build-image-target-list--described">
+                <li>
+                  <label class="pf-v6-c-check build-image-target-check build-image-target-check--described">
+                    <input class="pf-v6-c-check__input" type="checkbox" name="build-target" value="vmware-ova" />
+                    <span class="pf-v6-c-check__label">
+                      <span class="build-image-target-option-title">VMware vSphere - Open virtualization format (.ova)</span>
+                      <span class="build-image-target-option-desc">Build an image that can be deployed to VMware vSphere using the Open virtualization format.</span>
+                    </span>
+                  </label>
+                </li>
+                <li>
+                  <label class="pf-v6-c-check build-image-target-check build-image-target-check--described">
+                    <input class="pf-v6-c-check__input" type="checkbox" name="build-target" value="vmware-vmdk" />
+                    <span class="pf-v6-c-check__label">
+                      <span class="build-image-target-option-title">VMware vSphere - Virtual disk (.vmdk)</span>
+                      <span class="build-image-target-option-desc">Build a virtual disk image that can be deployed to VMware vSphere.</span>
+                    </span>
+                  </label>
+                </li>
+              </ul>
+
+              <h3 class="build-image-target-category">Miscellaneous formats</h3>
+              <ul class="build-image-target-list build-image-target-list--described">
+                <li>
+                  <label class="pf-v6-c-check build-image-target-check build-image-target-check--described">
+                    <input class="pf-v6-c-check__input" type="checkbox" name="build-target" value="qcow2" />
+                    <span class="pf-v6-c-check__label">
+                      <span class="build-image-target-option-title">Virtualization - Guest image (.qcow2)</span>
+                      <span class="build-image-target-option-desc">Build a guest image for virtualization platforms such as KVM.</span>
+                    </span>
+                  </label>
+                </li>
+                <li>
+                  <label class="pf-v6-c-check build-image-target-check build-image-target-check--described">
+                    <input class="pf-v6-c-check__input" type="checkbox" name="build-target" value="iso" />
+                    <span class="pf-v6-c-check__label">
+                      <span class="build-image-target-option-title">Baremetal - Installer (.iso)</span>
+                      <span class="build-image-target-option-desc">Build an ISO installer image for bare metal deployments.</span>
+                    </span>
+                  </label>
+                </li>
+                <li>
+                  <label class="pf-v6-c-check build-image-target-check build-image-target-check--described">
+                    <input class="pf-v6-c-check__input" type="checkbox" name="build-target" value="wsl" />
+                    <span class="pf-v6-c-check__label">
+                      <span class="build-image-target-option-title">WSL - Windows Subsystem for Linux (.tar.gz)</span>
+                      <span class="build-image-target-option-desc">Build an image for Windows Subsystem for Linux.</span>
+                    </span>
+                  </label>
+                </li>
+              </ul>
+            </div>
+          </section>
+          </div>
+
+          <div class="build-image-wizard__panel hidden" id="build-image-panel-repos" aria-hidden="true">
+            <section class="build-image-section">
+              <h2 class="build-image-section__title build-image-section__title--with-icon">
+                Extended support subscription
+                <button type="button" class="pf-v6-c-button pf-m-plain pf-m-no-padding build-image-section__info" aria-label="More information about extended support subscription">
+                  <span class="pf-v6-c-button__icon"><i class="fas fa-info-circle" aria-hidden="true"></i></span>
+                </button>
+              </h2>
+              <div class="build-image-radio-group" role="radiogroup" aria-label="Extended support subscription">
+                <label class="pf-v6-c-radio build-image-radio">
+                  <input class="pf-v6-c-radio__input" type="radio" name="build-image-eus" value="none" checked />
+                  <span class="pf-v6-c-radio__label">None</span>
+                </label>
+                <label class="pf-v6-c-radio build-image-radio">
+                  <input class="pf-v6-c-radio__input" type="radio" name="build-image-eus" value="eus" />
+                  <span class="pf-v6-c-radio__label">Extended update support (EUS)</span>
+                </label>
+                <label class="pf-v6-c-radio build-image-radio">
+                  <input class="pf-v6-c-radio__input" type="radio" name="build-image-eus" value="eeus" />
+                  <span class="pf-v6-c-radio__label">Enhanced extended update support (EEUS)</span>
+                </label>
+              </div>
+            </section>
+
+            <hr class="build-image-section__divider" />
+
+            <section class="build-image-section">
+              <h2 class="build-image-section__title">Repositories</h2>
+              <p class="build-image-section__hint">
+                Can't find a repository? Ensure it's been added on the
+                <a href="#" onclick="return false;">Repositories page <i class="fas fa-external-link-alt" aria-hidden="true"></i></a>
+              </p>
+              <div class="build-image-packages-toolbar build-image-packages-toolbar--repos">
+                <div class="pf-v6-c-form-control pf-m-search build-image-packages-search build-image-packages-search--repos">
+                  <span class="pf-v6-c-form-control__icon">
+                    <i class="fas fa-search" aria-hidden="true"></i>
+                  </span>
+                  <input type="search" placeholder="Search and add repositories" aria-label="Search and add repositories" />
+                </div>
+                <button type="button" class="pf-v6-c-button pf-m-secondary">Refresh repositories</button>
+              </div>
+              <div class="build-image-packages-table-wrap">
+                <table class="build-image-packages-table build-image-packages-table--repos" aria-label="Repositories">
+                  <colgroup>
+                    <col class="build-image-packages-col-name" />
+                    <col class="build-image-packages-col-arch" />
+                    <col class="build-image-packages-col-version" />
+                    <col class="build-image-packages-col-count" />
+                    <col class="build-image-packages-col-status" />
+                    <col class="build-image-packages-col-action" />
+                  </colgroup>
+                  <thead>
+                    <tr>
+                      <th scope="col">Name</th>
+                      <th scope="col">Architecture</th>
+                      <th scope="col">Version</th>
+                      <th scope="col">Packages</th>
+                      <th scope="col">Status</th>
+                      <th scope="col" class="build-image-packages-table__action" aria-label="Actions"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th scope="row">
+                        <span class="build-image-packages-name">fedora_test_long_tittle_slay_love</span>
+                      </th>
+                      <td>x86_64</td>
+                      <td>Any</td>
+                      <td>2000</td>
+                      <td>
+                        <span class="build-image-packages-status">
+                          <i class="fas fa-check-circle" aria-hidden="true"></i>
+                          <span>Valid</span>
+                        </span>
+                      </td>
+                      <td class="build-image-packages-table__action">
+                        <span class="build-image-packages-lock" aria-label="Locked"><i class="fas fa-lock" aria-hidden="true"></i></span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th scope="row">
+                        <span class="build-image-packages-name">fedora_test</span>
+                      </th>
+                      <td>x86_64</td>
+                      <td>Any</td>
+                      <td>2000</td>
+                      <td>
+                        <span class="build-image-packages-status">
+                          <i class="fas fa-check-circle" aria-hidden="true"></i>
+                          <span>Valid</span>
+                        </span>
+                      </td>
+                      <td class="build-image-packages-table__action">
+                        <span class="build-image-packages-lock" aria-label="Locked"><i class="fas fa-lock" aria-hidden="true"></i></span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
+            <hr class="build-image-section__divider" />
+
+            <section class="build-image-section">
+              <h2 class="build-image-section__title">Packages</h2>
+              <p class="build-image-section__hint">
+                Search and add individual packages to include in your image. You can select packages from the repositories included in the previous step.
+              </p>
+              <div class="build-image-packages-toolbar build-image-packages-toolbar--packages">
+                <div class="build-image-packages-field build-image-packages-type">
+                  <label class="pf-v6-c-form__label" for="build-image-package-type">
+                    <span class="pf-v6-c-form__label-text">Package type</span>
+                  </label>
+                  <div class="pf-v6-c-form-control build-image-packages-type-select">
+                    <select id="build-image-package-type">
+                      <option selected>Individual packages</option>
+                      <option>Package groups</option>
+                    </select>
+                    <span class="build-image-packages-type-caret" aria-hidden="true">
+                      <i class="fas fa-angle-down"></i>
+                    </span>
+                  </div>
+                </div>
+                <div class="build-image-packages-field build-image-packages-search-field">
+                  <label class="pf-v6-c-form__label" for="build-image-package-search">
+                    <span class="pf-v6-c-form__label-text">Add packages</span>
+                  </label>
+                  <div class="pf-v6-c-form-control pf-m-search build-image-packages-search build-image-packages-search--packages">
+                    <span class="pf-v6-c-form-control__icon">
+                      <i class="fas fa-search" aria-hidden="true"></i>
+                    </span>
+                    <input type="search" id="build-image-package-search" placeholder="Search and add packages" aria-label="Search and add packages" />
+                  </div>
+                </div>
+              </div>
+              <div class="build-image-packages-table-wrap">
+                <table class="build-image-packages-table build-image-packages-table--packages" aria-label="Packages">
+                  <colgroup>
+                    <col class="build-image-packages-col-name" />
+                    <col class="build-image-packages-col-stream" />
+                    <col class="build-image-packages-col-retirement" />
+                    <col class="build-image-packages-col-source" />
+                    <col class="build-image-packages-col-action" />
+                  </colgroup>
+                  <thead>
+                    <tr>
+                      <th scope="col">Name</th>
+                      <th scope="col">Application stream</th>
+                      <th scope="col">Retirement date</th>
+                      <th scope="col">Source</th>
+                      <th scope="col" class="build-image-packages-table__action" aria-label="Actions"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th scope="row">
+                        <span class="build-image-packages-name">bash</span>
+                      </th>
+                      <td>1.93.2</td>
+                      <td>
+                        <span class="build-image-packages-status">
+                          <i class="fas fa-check-circle" aria-hidden="true"></i>
+                          <span>May 2026</span>
+                        </span>
+                      </td>
+                      <td>Included repository</td>
+                      <td class="build-image-packages-table__action">
+                        <span class="build-image-packages-lock" aria-label="Locked"><i class="fas fa-lock" aria-hidden="true"></i></span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          </div>
+
+          <div class="build-image-wizard__panel hidden" id="build-image-panel-advanced" aria-hidden="true">
+            <section class="build-image-section">
+              <h2 class="build-image-section__title">Advanced settings</h2>
+              <p class="build-image-section__hint">Configure additional system settings for your image. These settings are optional and can be left at their defaults.</p>
+            </section>
+
+            <section class="build-image-section build-image-advanced-section">
+              <h3 class="build-image-advanced-section__title">File system configuration</h3>
+              <p class="build-image-section__hint">Choose automatic partitioning or manually configure partitions for your image.</p>
+              <div class="pf-v6-c-form build-image-advanced-form">
+                <div class="pf-v6-c-form__group">
+                  <label class="pf-v6-c-form__label" for="build-image-partitioning">
+                    <span class="pf-v6-c-form__label-text">Partitioning type</span>
+                  </label>
+                  <div class="pf-v6-c-form-control build-image-select-control">
+                    <select id="build-image-partitioning">
+                      <option selected>Automatic partitioning</option>
+                      <option>Manual partitioning</option>
+                    </select>
+                    <span class="build-image-select-caret" aria-hidden="true"><i class="fas fa-angle-down"></i></span>
+                  </div>
+                  <p class="build-image-field-hint">Automatic partitioning is selected by default.</p>
+                </div>
+              </div>
+            </section>
+
+            <hr class="build-image-section__divider" />
+
+            <section class="build-image-section build-image-advanced-section">
+              <h3 class="build-image-advanced-section__title">Timezone</h3>
+              <p class="build-image-section__hint">Configure the system timezone and NTP servers for time synchronization.</p>
+              <div class="pf-v6-c-form build-image-advanced-form">
+                <div class="pf-v6-c-form__group">
+                  <label class="pf-v6-c-form__label" for="build-image-timezone">
+                    <span class="pf-v6-c-form__label-text">Timezone</span>
+                  </label>
+                  <div class="pf-v6-c-form-control build-image-select-control">
+                    <select id="build-image-timezone">
+                      <option selected disabled hidden value="">Select timezone</option>
+                      <option>America/New_York</option>
+                      <option>America/Chicago</option>
+                      <option>Europe/London</option>
+                    </select>
+                    <span class="build-image-select-caret" aria-hidden="true"><i class="fas fa-angle-down"></i></span>
+                  </div>
+                </div>
+                <div class="pf-v6-c-form__group">
+                  <label class="pf-v6-c-form__label" for="build-image-ntp">
+                    <span class="pf-v6-c-form__label-text">NTP servers</span>
+                  </label>
+                  <div class="pf-v6-c-form-control build-image-tag-input">
+                    <span class="build-image-tag">
+                      pool.ntp.org
+                      <button type="button" class="build-image-tag__remove" aria-label="Remove pool.ntp.org"><i class="fas fa-times" aria-hidden="true"></i></button>
+                    </span>
+                    <input type="text" id="build-image-ntp" placeholder="User can keep typing..." />
+                  </div>
+                  <p class="build-image-field-hint">Specify NTP server by hostname or IP address. Examples: ocean.nomads.com, 127.0.0.254</p>
+                </div>
+              </div>
+            </section>
+
+            <hr class="build-image-section__divider" />
+
+            <section class="build-image-section build-image-advanced-section">
+              <h3 class="build-image-advanced-section__title">Locale</h3>
+              <p class="build-image-section__hint">Set the primary languages and keyboard layout for the image.</p>
+              <div class="pf-v6-c-form build-image-advanced-form">
+                <div class="pf-v6-c-form__group">
+                  <label class="pf-v6-c-form__label" for="build-image-languages">
+                    <span class="pf-v6-c-form__label-text">Languages</span>
+                  </label>
+                  <div class="pf-v6-c-form-control build-image-select-control">
+                    <select id="build-image-languages">
+                      <option selected>English - United States (en_US.UTF-8)</option>
+                    </select>
+                    <span class="build-image-select-caret" aria-hidden="true"><i class="fas fa-angle-down"></i></span>
+                  </div>
+                  <button type="button" class="pf-v6-c-button pf-m-link pf-m-inline build-image-advanced-add">+ Add language</button>
+                </div>
+                <div class="pf-v6-c-form__group">
+                  <label class="pf-v6-c-form__label" for="build-image-keyboard">
+                    <span class="pf-v6-c-form__label-text">Keyboard</span>
+                  </label>
+                  <div class="pf-v6-c-form-control build-image-select-control">
+                    <select id="build-image-keyboard">
+                      <option selected disabled hidden value="">Select keyboard</option>
+                      <option>English (US)</option>
+                    </select>
+                    <span class="build-image-select-caret" aria-hidden="true"><i class="fas fa-angle-down"></i></span>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <hr class="build-image-section__divider" />
+
+            <section class="build-image-section build-image-advanced-section">
+              <h3 class="build-image-advanced-section__title">Hostname</h3>
+              <p class="build-image-section__hint">Set a unique hostname to identify the image on the network.</p>
+              <div class="pf-v6-c-form build-image-advanced-form">
+                <div class="pf-v6-c-form__group">
+                  <label class="pf-v6-c-form__label" for="build-image-hostname">
+                    <span class="pf-v6-c-form__label-text">Hostname</span>
+                  </label>
+                  <div class="pf-v6-c-form-control pf-m-icon">
+                    <input type="text" id="build-image-hostname" placeholder="the-systems-name" />
+                    <span class="pf-v6-c-form-control__utilities">
+                      <button type="button" class="pf-v6-c-button pf-m-control pf-m-plain" aria-label="Clear hostname">
+                        <span class="pf-v6-c-button__icon"><i class="fas fa-times" aria-hidden="true"></i></span>
+                      </button>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <hr class="build-image-section__divider" />
+
+            <section class="build-image-section build-image-advanced-section">
+              <h3 class="build-image-advanced-section__title">Kernel</h3>
+              <p class="build-image-section__hint">Select the kernel package and add custom boot arguments.</p>
+              <div class="pf-v6-c-form build-image-advanced-form">
+                <div class="pf-v6-c-form__group">
+                  <label class="pf-v6-c-form__label" for="build-image-kernel-package">
+                    <span class="pf-v6-c-form__label-text">Kernel package</span>
+                  </label>
+                  <div class="pf-v6-c-form-control build-image-select-control">
+                    <select id="build-image-kernel-package">
+                      <option selected>kernel-debug</option>
+                      <option>kernel</option>
+                    </select>
+                    <span class="build-image-select-caret" aria-hidden="true"><i class="fas fa-angle-down"></i></span>
+                  </div>
+                </div>
+                <div class="pf-v6-c-form__group">
+                  <label class="pf-v6-c-form__label" for="build-image-kernel-args">
+                    <span class="pf-v6-c-form__label-text">Arguments</span>
+                  </label>
+                  <div class="pf-v6-c-form-control build-image-tag-input">
+                    <span class="build-image-tag">
+                      nomodeset
+                      <button type="button" class="build-image-tag__remove" aria-label="Remove nomodeset"><i class="fas fa-times" aria-hidden="true"></i></button>
+                    </span>
+                    <input type="text" id="build-image-kernel-args" placeholder="User can keep typing..." />
+                  </div>
+                  <p class="build-image-field-hint">Enter additional kernel boot parameters. Examples: no-kvm-clock, console=ttyS0</p>
+                </div>
+              </div>
+            </section>
+
+            <hr class="build-image-section__divider" />
+
+            <section class="build-image-section build-image-advanced-section">
+              <h3 class="build-image-advanced-section__title">
+                Systemd services
+                <span class="build-image-advanced-badge">Stability OpenSCAP</span>
+              </h3>
+              <p class="build-image-section__hint">Enable, disable, or mask systemd services to control startup behavior.</p>
+              <div class="pf-v6-c-form build-image-advanced-form">
+                <div class="pf-v6-c-form__group">
+                  <label class="pf-v6-c-form__label" for="build-image-enabled-services">
+                    <span class="pf-v6-c-form__label-text">Enabled services</span>
+                  </label>
+                  <div class="pf-v6-c-form-control">
+                    <input type="text" id="build-image-enabled-services" placeholder="Type service name, comma to add" />
+                  </div>
+                </div>
+                <div class="pf-v6-c-form__group">
+                  <label class="pf-v6-c-form__label" for="build-image-disabled-services">
+                    <span class="pf-v6-c-form__label-text">Disabled services</span>
+                  </label>
+                  <div class="pf-v6-c-form-control build-image-tag-input">
+                    <span class="build-image-tag">
+                      kdump
+                      <button type="button" class="build-image-tag__remove" aria-label="Remove kdump"><i class="fas fa-times" aria-hidden="true"></i></button>
+                    </span>
+                    <span class="build-image-tag">
+                      firewalld
+                      <button type="button" class="build-image-tag__remove" aria-label="Remove firewalld"><i class="fas fa-times" aria-hidden="true"></i></button>
+                    </span>
+                    <input type="text" id="build-image-disabled-services" placeholder="Type service name, comma to add" />
+                  </div>
+                </div>
+                <div class="pf-v6-c-form__group">
+                  <label class="pf-v6-c-form__label" for="build-image-masked-services">
+                    <span class="pf-v6-c-form__label-text">Masked services</span>
+                  </label>
+                  <div class="pf-v6-c-form-control">
+                    <input type="text" id="build-image-masked-services" placeholder="Type service name, comma to add" />
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <hr class="build-image-section__divider" />
+
+            <section class="build-image-section build-image-advanced-section">
+              <h3 class="build-image-advanced-section__title">Firewall</h3>
+              <p class="build-image-section__hint">Configure firewall rules to control network traffic.</p>
+              <div class="build-image-advanced-row">
+                <div class="pf-v6-c-form__group">
+                  <label class="pf-v6-c-form__label" for="build-image-firewall-port">
+                    <span class="pf-v6-c-form__label-text">Port</span>
+                  </label>
+                  <div class="pf-v6-c-form-control">
+                    <input type="text" id="build-image-firewall-port" placeholder="Enter port" />
+                  </div>
+                </div>
+                <div class="pf-v6-c-form__group">
+                  <label class="pf-v6-c-form__label" for="build-image-firewall-enabled">
+                    <span class="pf-v6-c-form__label-text">Enabled services</span>
+                  </label>
+                  <div class="pf-v6-c-form-control">
+                    <input type="text" id="build-image-firewall-enabled" placeholder="Enter service name" />
+                  </div>
+                </div>
+                <div class="pf-v6-c-form__group">
+                  <label class="pf-v6-c-form__label" for="build-image-firewall-disabled">
+                    <span class="pf-v6-c-form__label-text">Disabled services</span>
+                  </label>
+                  <div class="pf-v6-c-form-control">
+                    <input type="text" id="build-image-firewall-disabled" placeholder="Enter service name" />
+                  </div>
+                </div>
+                <button type="button" class="pf-v6-c-button pf-m-plain build-image-advanced-row__remove" aria-label="Remove firewall designation">
+                  <span class="pf-v6-c-button__icon"><i class="fas fa-trash-alt" aria-hidden="true"></i></span>
+                </button>
+              </div>
+              <button type="button" class="pf-v6-c-button pf-m-link pf-m-inline build-image-advanced-add">+ Add firewall designation</button>
+            </section>
+
+            <hr class="build-image-section__divider" />
+
+            <section class="build-image-section build-image-advanced-section">
+              <h3 class="build-image-advanced-section__title">Groups</h3>
+              <p class="build-image-section__hint">Define user groups for the image.</p>
+              <div class="build-image-advanced-row build-image-advanced-row--groups">
+                <div class="pf-v6-c-form__group">
+                  <label class="pf-v6-c-form__label" for="build-image-group-name">
+                    <span class="pf-v6-c-form__label-text">Name</span>
+                  </label>
+                  <div class="pf-v6-c-form-control">
+                    <input type="text" id="build-image-group-name" value="admin_group" />
+                  </div>
+                </div>
+                <div class="pf-v6-c-form__group">
+                  <label class="pf-v6-c-form__label build-image-advanced-label--icon" for="build-image-group-id">
+                    <span class="pf-v6-c-form__label-text">Group ID</span>
+                    <button type="button" class="pf-v6-c-button pf-m-plain pf-m-no-padding build-image-section__info" aria-label="More information about group ID">
+                      <span class="pf-v6-c-button__icon"><i class="fas fa-info-circle" aria-hidden="true"></i></span>
+                    </button>
+                  </label>
+                  <div class="pf-v6-c-form-control">
+                    <input type="text" id="build-image-group-id" value="1001" />
+                  </div>
+                </div>
+              </div>
+              <button type="button" class="pf-v6-c-button pf-m-link pf-m-inline build-image-advanced-add">+ Add group</button>
+            </section>
+
+            <hr class="build-image-section__divider" />
+
+            <section class="build-image-section build-image-advanced-section">
+              <h3 class="build-image-advanced-section__title">Users</h3>
+              <p class="build-image-section__hint">Create user accounts for the image.</p>
+              <div class="build-image-users">
+                <div class="build-image-users__header">
+                  <span>Username</span>
+                  <span>Password</span>
+                  <span>SSH key</span>
+                  <span>Groups</span>
+                  <span>Admin</span>
+                </div>
+                <div class="build-image-users__row">
+                  <div class="pf-v6-c-form-control">
+                    <input type="text" placeholder="Get username" aria-label="Username" />
+                  </div>
+                  <div class="pf-v6-c-form-control">
+                    <input type="password" placeholder="Password" aria-label="Password" />
+                  </div>
+                  <div class="pf-v6-c-form-control">
+                    <textarea rows="2" placeholder="Paste SSH key here" aria-label="SSH key"></textarea>
+                  </div>
+                  <div class="pf-v6-c-form-control build-image-tag-input">
+                    <span class="build-image-tag">
+                      wheel
+                      <button type="button" class="build-image-tag__remove" aria-label="Remove wheel"><i class="fas fa-times" aria-hidden="true"></i></button>
+                    </span>
+                    <input type="text" placeholder="" aria-label="Groups" />
+                  </div>
+                  <label class="pf-v6-c-check build-image-users__admin">
+                    <input class="pf-v6-c-check__input" type="checkbox" checked />
+                    <span class="pf-v6-c-check__label sr-only">Admin</span>
+                  </label>
+                </div>
+              </div>
+              <button type="button" class="pf-v6-c-button pf-m-link pf-m-inline build-image-advanced-add">+ Add user</button>
+            </section>
+
+            <hr class="build-image-section__divider" />
+
+            <section class="build-image-section build-image-advanced-section">
+              <h3 class="build-image-advanced-section__title">First boot configuration</h3>
+              <p class="build-image-section__hint">Add a custom script to run on first boot of the image.</p>
+              <div class="build-image-first-boot">
+                <div class="build-image-first-boot__toolbar">
+                  <span class="build-image-first-boot__toolbar-label">Drag and drop a file or upload</span>
+                  <div class="build-image-first-boot__toolbar-actions">
+                    <button type="button" class="pf-v6-c-button pf-m-secondary pf-m-small">Upload</button>
+                    <button type="button" class="pf-v6-c-button pf-m-link pf-m-small">Clear</button>
+                  </div>
+                </div>
+                <div class="build-image-first-boot__editor">
+                  <div class="build-image-first-boot__empty">
+                    <i class="fas fa-file-code build-image-first-boot__icon" aria-hidden="true"></i>
+                    <p class="build-image-first-boot__title">Start editing</p>
+                    <button type="button" class="pf-v6-c-button pf-m-secondary pf-m-small">Upload files</button>
+                    <button type="button" class="pf-v6-c-button pf-m-link pf-m-inline">Create from scratch</button>
+                  </div>
+                </div>
+                <p class="build-image-field-hint">Supported: bash, python, or Ansible playbooks</p>
+              </div>
+            </section>
+          </div>
+
+          <div class="build-image-wizard__panel hidden" id="build-image-panel-review" aria-hidden="true">
+            <section class="build-image-section build-image-review">
+              <h2 class="build-image-section__title">Review image configuration</h2>
+              <p class="build-image-section__hint build-image-review__intro">Filler text</p>
+
+              <div class="pf-v6-c-alert pf-m-custom pf-m-inline build-image-review__alert" role="status">
+                <div class="pf-v6-c-alert__icon">
+                  <i class="fas fa-info-circle" aria-hidden="true"></i>
+                </div>
+                <div class="pf-v6-c-alert__title">Ready to build</div>
+                <div class="pf-v6-c-alert__description">
+                  Your image configuration is complete and ready to build. The build process may take several minutes depending on the size and complexity of your image.
+                </div>
+              </div>
+
+              <div class="build-image-review__cards">
+                <article class="build-image-review-card">
+                  <header class="build-image-review-card__header">
+                    <h3 class="build-image-review-card__title">Image overview</h3>
+                    <button type="button" class="pf-v6-c-button pf-m-link pf-m-inline build-image-review-card__edit" id="build-image-review-edit-overview">Edit</button>
+                  </header>
+                  <dl class="pf-v6-c-description-list pf-m-2-col-on-lg build-image-review-card__dl">
+                    <div class="pf-v6-c-description-list__group">
+                      <dt class="pf-v6-c-description-list__term">Name</dt>
+                      <dd class="pf-v6-c-description-list__description" id="build-image-review-name">my-custom-image</dd>
+                    </div>
+                    <div class="pf-v6-c-description-list__group">
+                      <dt class="pf-v6-c-description-list__term">Details</dt>
+                      <dd class="pf-v6-c-description-list__description" id="build-image-review-details">--</dd>
+                    </div>
+                    <div class="pf-v6-c-description-list__group">
+                      <dt class="pf-v6-c-description-list__term">Author</dt>
+                      <dd class="pf-v6-c-description-list__description">person@redhat.com</dd>
+                    </div>
+                    <div class="pf-v6-c-description-list__group">
+                      <dt class="pf-v6-c-description-list__term">Base release</dt>
+                      <dd class="pf-v6-c-description-list__description" id="build-image-review-release">Red Hat Enterprise Linux 9</dd>
+                    </div>
+                    <div class="pf-v6-c-description-list__group">
+                      <dt class="pf-v6-c-description-list__term">Architecture</dt>
+                      <dd class="pf-v6-c-description-list__description" id="build-image-review-architecture">x86_64</dd>
+                    </div>
+                    <div id="build-image-review-targets" class="build-image-review-targets"></div>
+                  </dl>
+                </article>
+
+                <article class="build-image-review-card">
+                  <header class="build-image-review-card__header">
+                    <h3 class="build-image-review-card__title">Registration</h3>
+                    <button type="button" class="pf-v6-c-button pf-m-link pf-m-inline build-image-review-card__edit">Edit</button>
+                  </header>
+                  <dl class="pf-v6-c-description-list pf-m-2-col-on-lg build-image-review-card__dl">
+                    <div class="pf-v6-c-description-list__group build-image-review-card__group--full">
+                      <dt class="pf-v6-c-description-list__term">Registration method</dt>
+                      <dd class="pf-v6-c-description-list__description">
+                        <ul class="build-image-review-list">
+                          <li><i class="fas fa-check-circle build-image-review-list__icon" aria-hidden="true"></i> Enabled predictive analytics and management capabilities.</li>
+                          <li><i class="fas fa-check-circle build-image-review-list__icon" aria-hidden="true"></i> Enabled predictive analytics and management capabilities.</li>
+                        </ul>
+                      </dd>
+                    </div>
+                    <div class="pf-v6-c-description-list__group">
+                      <dt class="pf-v6-c-description-list__term">Organization ID</dt>
+                      <dd class="pf-v6-c-description-list__description">11009103</dd>
+                    </div>
+                    <div class="pf-v6-c-description-list__group">
+                      <dt class="pf-v6-c-description-list__term">Activation key</dt>
+                      <dd class="pf-v6-c-description-list__description">my-default-key</dd>
+                    </div>
+                  </dl>
+                </article>
+
+                <article class="build-image-review-card">
+                  <header class="build-image-review-card__header">
+                    <h3 class="build-image-review-card__title">Advanced settings</h3>
+                    <button type="button" class="pf-v6-c-button pf-m-link pf-m-inline build-image-review-card__edit">Edit</button>
+                  </header>
+                  <dl class="pf-v6-c-description-list pf-m-2-col-on-lg build-image-review-card__dl">
+                    <div class="pf-v6-c-description-list__group">
+                      <dt class="pf-v6-c-description-list__term">Image size (minimum)</dt>
+                      <dd class="pf-v6-c-description-list__description">12 GiB</dd>
+                    </div>
+                    <div class="pf-v6-c-description-list__group">
+                      <dt class="pf-v6-c-description-list__term">Timezone</dt>
+                      <dd class="pf-v6-c-description-list__description">(Default) Eastern Standard / New York</dd>
+                    </div>
+                    <div class="pf-v6-c-description-list__group">
+                      <dt class="pf-v6-c-description-list__term">Languages</dt>
+                      <dd class="pf-v6-c-description-list__description">(Default) English / United States</dd>
+                    </div>
+                  </dl>
+                </article>
+              </div>
+            </section>
+          </div>
         </div>
       </div>
     </div>
     <footer class="pf-v6-c-modal-box__footer build-image-modal__footer">
       <div class="pf-v6-c-action-list pf-m-align-right pf-m-nowrap">
         <div class="pf-v6-c-action-list__group">
-          <button type="button" class="pf-v6-c-button pf-m-secondary" disabled>Back</button>
-          <button type="button" class="pf-v6-c-button pf-m-secondary" disabled>Next</button>
-          <button type="button" class="pf-v6-c-button pf-m-secondary" disabled>Review image</button>
+          <button type="button" class="pf-v6-c-button pf-m-secondary" id="build-image-btn-back" disabled>Back</button>
+          <button type="button" class="pf-v6-c-button pf-m-secondary" id="build-image-btn-next" disabled>Next</button>
+          <button type="button" class="pf-v6-c-button pf-m-secondary" id="build-image-btn-review">Review image</button>
           <button type="button" class="pf-v6-c-button pf-m-link" data-close>Cancel</button>
         </div>
       </div>

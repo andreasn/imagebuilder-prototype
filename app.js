@@ -270,6 +270,14 @@ const TARGET_MAP = {
   Oracle: "oci",
 };
 
+const BUILD_IMAGE_TARGET_MAP = {
+  AWS: "aws",
+  Azure: "azure",
+  GCP: "gcp",
+  Oracle: "oci",
+  "Bare metal": "iso",
+};
+
 const state = {
   images: [...IMAGES],
   emptyMode: false,
@@ -1382,7 +1390,7 @@ function bindTableEvents() {
         closeAllMenus();
       });
       menu.querySelector('[data-kebab-action="edit"]')?.addEventListener("click", () => {
-        openModal("build-image");
+        openBuildImageModal(id);
         closeAllMenus();
       });
       menu.querySelector('[data-kebab-action="rebuild"]')?.addEventListener("click", () => {
@@ -1407,7 +1415,7 @@ function bindTableEvents() {
 
 function updateBulkButtons() {
   const hasSelection = state.selected.size > 0;
-  $("#btn-edit").disabled = !hasSelection;
+  $("#btn-edit").disabled = state.selected.size !== 1;
   $("#btn-duplicate").disabled = !hasSelection;
   $("#btn-rebuild").disabled = !hasSelection;
 }
@@ -1473,6 +1481,253 @@ function renderIsoCards(containerId, titles) {
   });
 }
 
+const DEFAULT_BUILD_IMAGE_NAME = "rhel-10-x86_64-20240604-1322";
+
+let buildImageEditingId = null;
+let buildImageOriginalName = null;
+let buildImageCurrentStep = "base";
+const buildImageVisitedSteps = new Set(["base"]);
+
+const BUILD_IMAGE_WIZARD_STEPS = [
+  { id: "base", label: "Base settings" },
+  { id: "repos", label: "Repositories and packages" },
+  { id: "advanced", label: "Advanced settings" },
+  { id: "review", label: "Review" },
+];
+
+function getBuildImageWizardStepIndex(stepId) {
+  return BUILD_IMAGE_WIZARD_STEPS.findIndex((step) => step.id === stepId);
+}
+
+const BUILD_TARGET_REVIEW_CATEGORIES = [
+  {
+    label: "Public cloud",
+    values: {
+      aws: "Amazon Web Services",
+      gcp: "Google Cloud Platform",
+      azure: "Microsoft Azure",
+      oci: "Oracle Cloud Infrastructure",
+    },
+  },
+  {
+    label: "Private cloud",
+    values: {
+      "vmware-ova": "VMware vSphere (.ova)",
+      "vmware-vmdk": "VMware vSphere (.vmdk)",
+    },
+  },
+  {
+    label: "Miscellaneous formats",
+    values: {
+      qcow2: "Virtualization (.qcow2)",
+      iso: "Baremetal (.iso)",
+      wsl: "Windows Subsystem for Linux (.tar.gz)",
+    },
+  },
+];
+
+function getSelectedBuildTargetValues() {
+  return new Set(
+    [...$$("#build-image-panel-base input[name='build-target']:checked")].map((cb) => cb.value)
+  );
+}
+
+function syncBuildImageReviewTargets() {
+  const container = $("#build-image-review-targets");
+  if (!container) return;
+
+  const selected = getSelectedBuildTargetValues();
+  const groups = [
+    `<div class="pf-v6-c-description-list__group">
+      <dt class="pf-v6-c-description-list__term">Target environments</dt>
+      <dd class="pf-v6-c-description-list__description"></dd>
+    </div>`,
+  ];
+
+  BUILD_TARGET_REVIEW_CATEGORIES.forEach((category) => {
+    const labels = Object.entries(category.values)
+      .filter(([value]) => selected.has(value))
+      .map(([, label]) => label);
+    if (!labels.length) return;
+
+    groups.push(`<div class="pf-v6-c-description-list__group">
+      <dt class="pf-v6-c-description-list__term">${escapeHtml(category.label)}</dt>
+      <dd class="pf-v6-c-description-list__description">${escapeHtml(labels.join(", "))}</dd>
+    </div>`);
+  });
+
+  container.innerHTML = groups.join("");
+}
+
+function syncBuildImageReviewSummary() {
+  const name = $("#build-image-name")?.value.trim() || "my-custom-image";
+  const description = $("#build-image-description")?.value.trim();
+  const release = $("#build-image-release")?.selectedOptions[0]?.textContent?.trim() || "Red Hat Enterprise Linux 9";
+  const architecture = $("#build-image-architecture")?.value || "x86_64";
+
+  const reviewName = $("#build-image-review-name");
+  const reviewDetails = $("#build-image-review-details");
+  const reviewRelease = $("#build-image-review-release");
+  const reviewArchitecture = $("#build-image-review-architecture");
+
+  if (reviewName) reviewName.textContent = name;
+  if (reviewDetails) reviewDetails.textContent = description || "--";
+  if (reviewRelease) {
+    reviewRelease.textContent = release
+      .replace("Red Hat Enterprise Linux (RHEL)", "Red Hat Enterprise Linux")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+  if (reviewArchitecture) reviewArchitecture.textContent = architecture;
+  syncBuildImageReviewTargets();
+}
+
+function getPreviousBuildImageStep(stepId) {
+  if (stepId === "review") return "advanced";
+  if (stepId === "advanced") return "repos";
+  if (stepId === "repos") return "base";
+  return "base";
+}
+
+function getNextBuildImageStep(stepId) {
+  if (stepId === "base") return "repos";
+  if (stepId === "repos") return "advanced";
+  if (stepId === "advanced") return "review";
+  return stepId;
+}
+
+function setBuildImageWizardStep(stepId) {
+  const panels = {
+    base: $("#build-image-panel-base"),
+    repos: $("#build-image-panel-repos"),
+    advanced: $("#build-image-panel-advanced"),
+    review: $("#build-image-panel-review"),
+  };
+  const steps = $$("#modal-build-image .build-image-wizard__step");
+  const backBtn = $("#build-image-btn-back");
+  const nextBtn = $("#build-image-btn-next");
+  const reviewBtn = $("#build-image-btn-review");
+  const stepIndex = getBuildImageWizardStepIndex(stepId);
+
+  buildImageCurrentStep = stepId;
+  buildImageVisitedSteps.add(stepId);
+
+  Object.entries(panels).forEach(([id, panel]) => {
+    if (!panel) return;
+    const show = id === stepId;
+    panel.classList.toggle("hidden", !show);
+    panel.setAttribute("aria-hidden", show ? "false" : "true");
+  });
+
+  steps.forEach((stepEl, index) => {
+    const step = BUILD_IMAGE_WIZARD_STEPS[index];
+    const isCurrent = index === stepIndex;
+    const isVisited = buildImageVisitedSteps.has(step.id) && !isCurrent;
+    stepEl.classList.toggle("build-image-wizard__step--current", isCurrent);
+    stepEl.classList.toggle("build-image-wizard__step--visited", isVisited);
+    if (isCurrent) {
+      stepEl.setAttribute("aria-current", "step");
+    } else {
+      stepEl.removeAttribute("aria-current");
+    }
+    const marker = stepEl.querySelector(".build-image-wizard__step-marker");
+    if (marker) marker.textContent = String(index + 1);
+  });
+
+  const isBase = stepId === "base";
+  const isReview = stepId === "review";
+  const canGoNext = stepId === "base" || stepId === "repos" || stepId === "advanced";
+
+  if (backBtn) backBtn.disabled = isBase;
+  if (nextBtn) nextBtn.disabled = !canGoNext;
+  if (reviewBtn) {
+    reviewBtn.disabled = false;
+    reviewBtn.textContent = isReview ? "Save blueprint" : "Review image";
+    reviewBtn.classList.toggle("pf-m-secondary", !isReview);
+    reviewBtn.classList.toggle("pf-m-primary", isReview);
+  }
+
+  if (isReview) syncBuildImageReviewSummary();
+  panels[stepId]?.scrollTo(0, 0);
+}
+
+function saveBuildImageBlueprint() {
+  const newName = $("#build-image-name")?.value.trim();
+  if (buildImageEditingId && newName && newName !== buildImageOriginalName) {
+    const img = state.images.find((i) => i.id === buildImageEditingId);
+    if (img) {
+      img.name = newName;
+      renderTable();
+    }
+  }
+  buildImageEditingId = null;
+  buildImageOriginalName = null;
+  showToast("Blueprint saved");
+  closeModals();
+}
+
+function openBuildImageModal(imageId) {
+  const nameInput = $("#build-image-name");
+  const img = imageId ? state.images.find((i) => i.id === imageId) : null;
+  buildImageEditingId = imageId || null;
+  if (nameInput) {
+    if (img) {
+      buildImageOriginalName = img.name ?? null;
+      nameInput.value = img.name ?? DEFAULT_BUILD_IMAGE_NAME;
+    } else {
+      buildImageOriginalName = null;
+      nameInput.value = DEFAULT_BUILD_IMAGE_NAME;
+    }
+  } else {
+    buildImageOriginalName = null;
+  }
+  setBuildImageTargetsFromImage(img);
+  buildImageVisitedSteps.clear();
+  buildImageVisitedSteps.add("base");
+  setBuildImageWizardStep("base");
+  openModal("build-image");
+}
+
+function syncBuildImageTargetNested(checkbox, nested) {
+  const show = checkbox.checked;
+  nested.classList.toggle("hidden", !show);
+  nested.setAttribute("aria-hidden", show ? "false" : "true");
+}
+
+function resetBuildImageTargets() {
+  $$("#build-image-panel-base input[name='build-target']").forEach((checkbox) => {
+    checkbox.checked = false;
+    const nested = checkbox.closest(".build-image-target-item")?.querySelector(".build-image-target-nested");
+    if (nested) syncBuildImageTargetNested(checkbox, nested);
+  });
+}
+
+function setBuildImageTargetsFromImage(img) {
+  resetBuildImageTargets();
+  if (!img) return;
+
+  const targetValue = BUILD_IMAGE_TARGET_MAP[img.target];
+  if (!targetValue) return;
+
+  const checkbox = $(`#build-image-panel-base input[name='build-target'][value='${targetValue}']`);
+  if (!checkbox) return;
+
+  checkbox.checked = true;
+  const nested = checkbox.closest(".build-image-target-item")?.querySelector(".build-image-target-nested");
+  if (nested) syncBuildImageTargetNested(checkbox, nested);
+}
+
+function initBuildImageTargetToggles() {
+  $("#build-image-panel-base")?.querySelectorAll(".build-image-target-item").forEach((item) => {
+    const checkbox = item.querySelector(".build-image-target-check input[type='checkbox']");
+    const nested = item.querySelector(".build-image-target-nested");
+    if (!checkbox || !nested) return;
+
+    syncBuildImageTargetNested(checkbox, nested);
+    checkbox.addEventListener("change", () => syncBuildImageTargetNested(checkbox, nested));
+  });
+}
+
 function initBuildImageModal() {
   const nameInput = $("#build-image-name");
   $("#build-image-name-clear")?.addEventListener("click", () => {
@@ -1482,17 +1737,28 @@ function initBuildImageModal() {
     }
   });
 
-  $("#modal-build-image")?.querySelectorAll(".pf-v6-c-toggle-group__button").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const group = btn.closest(".pf-v6-c-toggle-group");
-      group?.querySelectorAll(".pf-v6-c-toggle-group__button").forEach((b) => {
-        b.classList.remove("pf-m-selected");
-        b.setAttribute("aria-pressed", "false");
-      });
-      btn.classList.add("pf-m-selected");
-      btn.setAttribute("aria-pressed", "true");
-    });
+  $("#build-image-btn-next")?.addEventListener("click", () => {
+    const nextStep = getNextBuildImageStep(buildImageCurrentStep);
+    if (nextStep !== buildImageCurrentStep) setBuildImageWizardStep(nextStep);
   });
+
+  $("#build-image-btn-review")?.addEventListener("click", () => {
+    if (buildImageCurrentStep !== "review") {
+      setBuildImageWizardStep("review");
+      return;
+    }
+    saveBuildImageBlueprint();
+  });
+
+  $("#build-image-btn-back")?.addEventListener("click", () => {
+    setBuildImageWizardStep(getPreviousBuildImageStep(buildImageCurrentStep));
+  });
+
+  $("#build-image-review-edit-overview")?.addEventListener("click", () => {
+    setBuildImageWizardStep("base");
+  });
+
+  initBuildImageTargetToggles();
 }
 
 function openModal(id) {
@@ -1782,7 +2048,13 @@ function init() {
   });
 
   $$("[data-modal]").forEach((btn) => {
-    btn.addEventListener("click", () => openModal(btn.dataset.modal));
+    btn.addEventListener("click", () => {
+      if (btn.dataset.modal === "build-image") {
+        openBuildImageModal();
+        return;
+      }
+      openModal(btn.dataset.modal);
+    });
   });
 
   $$("[data-close]").forEach((btn) => {
@@ -1843,7 +2115,9 @@ function init() {
   });
 
   $("#btn-edit")?.addEventListener("click", () => {
-    if (state.selected.size) openModal("build-image");
+    if (state.selected.size !== 1) return;
+    const [imageId] = state.selected;
+    openBuildImageModal(imageId);
   });
 
   $("#btn-rebuild")?.addEventListener("click", () => {
