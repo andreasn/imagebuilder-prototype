@@ -1,7 +1,10 @@
+const IMAGE_SEED_BASE_TIME = Date.now();
+
 const IMAGES = [
   {
     id: "web-frontend",
     name: "web-frontend",
+    createdAt: IMAGE_SEED_BASE_TIME - 15 * 60 * 1000,
     lastUpdated: "15 minutes ago",
     os: "RHEL 8",
     target: "AWS",
@@ -19,6 +22,7 @@ const IMAGES = [
   {
     id: "data-processor",
     name: "data-processor",
+    createdAt: IMAGE_SEED_BASE_TIME - 3 * 60 * 60 * 1000,
     lastUpdated: "3 hours ago",
     os: "RHEL 8",
     target: "Azure",
@@ -30,6 +34,7 @@ const IMAGES = [
   {
     id: "notification-service",
     name: "notification-service",
+    createdAt: Date.parse("2025-08-25T12:00:00"),
     lastUpdated: "Aug 25, 2025",
     os: "RHEL 9",
     target: "GCP",
@@ -40,6 +45,7 @@ const IMAGES = [
   {
     id: "api-backend",
     name: "api-backend",
+    createdAt: Date.parse("2025-08-23T12:00:00"),
     lastUpdated: "Aug 23, 2025",
     os: "RHEL 10",
     target: "Bare metal",
@@ -50,6 +56,7 @@ const IMAGES = [
   {
     id: "auth-service",
     name: "auth-service",
+    createdAt: Date.parse("2025-08-22T12:00:00"),
     lastUpdated: "Aug 22, 2025",
     os: "RHEL 9",
     target: "AWS",
@@ -67,6 +74,7 @@ const IMAGES = [
   {
     id: "monitoring-dashboard",
     name: "monitoring-dashboard",
+    createdAt: Date.parse("2025-08-16T14:00:00"),
     lastUpdated: "Aug 16, 2025",
     os: "RHEL 8",
     target: "GCP",
@@ -77,6 +85,7 @@ const IMAGES = [
   {
     id: "demo-environment",
     name: "demo-environment",
+    createdAt: Date.parse("2025-08-16T10:00:00"),
     lastUpdated: "Aug 16, 2025",
     os: "RHEL 10",
     target: "Oracle",
@@ -278,6 +287,30 @@ const BUILD_IMAGE_TARGET_MAP = {
   "Bare metal": "iso",
 };
 
+const BUILD_TARGET_TO_IMAGE_TARGET = {
+  aws: "AWS",
+  gcp: "GCP",
+  azure: "Azure",
+  oci: "Oracle",
+  "vmware-ova": "VMware vSphere (.ova)",
+  "vmware-vmdk": "VMware vSphere (.vmdk)",
+  qcow2: "Virtualization (.qcow2)",
+  iso: "Bare metal",
+  wsl: "WSL",
+};
+
+const BUILD_TARGET_PRIORITY = [
+  "aws",
+  "gcp",
+  "azure",
+  "oci",
+  "vmware-ova",
+  "vmware-vmdk",
+  "qcow2",
+  "iso",
+  "wsl",
+];
+
 const state = {
   images: [...IMAGES],
   emptyMode: false,
@@ -414,10 +447,6 @@ function renderStatusBadge(status, tooltip, { forFilter = false, img = null, pla
   return `<span class="status-label-tooltip-host" tabindex="0" aria-label="${escapeAttr(tipText)}">${badge}${renderStatusTooltip(tipText)}</span>`;
 }
 
-function formatBuildDate() {
-  return new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-}
-
 function getFlatPhaseIndex(phaseId) {
   return BUILD_PHASES_FLAT.findIndex((p) => p.id === phaseId);
 }
@@ -509,10 +538,10 @@ function renderBuildProgressSteps(activeFlatIndex) {
 function renderTableStatusCell(img) {
   if (isImageBuilding(img)) {
     return `<div class="table-status-cell table-status-cell--building">
-      <span class="table-build-status">
+      <button type="button" class="table-build-status" data-build-progress="${escapeAttr(img.id)}" aria-label="View build progress for ${escapeAttr(img.name)}">
         ${renderPfSpinner({ size: "sm" })}
         <span>${escapeHtml(getBuildTableStatus(img))}</span>
-      </span>
+      </button>
     </div>`;
   }
 
@@ -574,6 +603,7 @@ function duplicateImage(sourceId) {
   const copy = JSON.parse(JSON.stringify(source));
   copy.name = `${source.name}-copy`;
   copy.id = imageIdFromName(copy.name);
+  copy.createdAt = Date.now();
   delete copy.buildPhaseIndex;
 
   state.images.splice(sourceIndex + 1, 0, copy);
@@ -618,6 +648,24 @@ function hideBuildProgressPopover() {
   $("#build-progress-popover")?.classList.add("hidden");
 }
 
+function showBuildProgressPopover(anchorRowId) {
+  const img = state.images.find((i) => i.id === anchorRowId);
+  if (!anchorRowId || !img || !isImageBuilding(img)) return;
+
+  state.buildAnchorId = anchorRowId;
+  $("#build-progress-popover")?.classList.remove("hidden");
+  syncBuildProgressUI(anchorRowId);
+}
+
+function bindBuildProgressClicks() {
+  $("#table-body")?.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-build-progress]");
+    if (!btn || !$("#table-body")?.contains(btn)) return;
+    e.stopPropagation();
+    showBuildProgressPopover(btn.dataset.buildProgress);
+  });
+}
+
 function positionBuildProgressPopover(anchorRowId) {
   const popover = $("#build-progress-popover");
   const row = document.querySelector(`#images-table tr.pf-v6-c-table__tr[data-id="${anchorRowId}"]`);
@@ -652,7 +700,7 @@ function completeAllBuilds() {
     img.status = "ready";
     delete img.statusBadgeText;
     delete img.buildPhaseIndex;
-    img.lastUpdated = formatBuildDate();
+    img.lastUpdated = "Just now";
   });
   state.buildAnchorId = null;
   hideBuildProgressPopover();
@@ -692,19 +740,13 @@ function startImageRebuild(imageIds) {
     img.status = "progress";
     delete img.statusBadgeText;
     img.buildPhaseIndex = 0;
+    img.lastUpdated = "Just now";
   });
 
   state.buildAnchorId = ids[0];
   renderTable();
-
-  const stepsEl = $("#build-progress-steps");
-  const popover = $("#build-progress-popover");
-  if (stepsEl && popover) {
-    stepsEl.innerHTML = `<ul class="build-progress-steps">${renderBuildProgressSteps(0)}</ul>`;
-    popover.classList.remove("hidden");
-    positionBuildProgressPopover(state.buildAnchorId);
-  }
-
+  // Defer so the triggering click does not bubble to document and dismiss the popover.
+  queueMicrotask(() => showBuildProgressPopover(state.buildAnchorId));
   startBuildTimer();
 }
 
@@ -720,6 +762,12 @@ function renderInstanceCell(img) {
     return `<span class="table-instance-link table-instance-link--disabled">Download image</span>`;
   }
   return `<button type="button" class="pf-v6-c-button pf-m-link" data-download="${img.id}">Download image</button>`;
+}
+
+function getImageCreatedAt(img) {
+  if (typeof img.createdAt === "number") return img.createdAt;
+  const parsed = Date.parse(img.lastUpdated);
+  return Number.isNaN(parsed) ? 0 : parsed;
 }
 
 function getFilteredImages() {
@@ -764,10 +812,7 @@ function getFilteredImages() {
     list = list.filter((img) => img.lastUpdated.includes("Aug") || img.lastUpdated.includes("2025"));
   }
 
-  list.sort((a, b) => {
-    const cmp = a.name.localeCompare(b.name);
-    return state.sortAsc ? cmp : -cmp;
-  });
+  list.sort((a, b) => getImageCreatedAt(b) - getImageCreatedAt(a));
 
   return list;
 }
@@ -1642,7 +1687,7 @@ function setBuildImageWizardStep(stepId) {
   if (nextBtn) nextBtn.disabled = !canGoNext;
   if (reviewBtn) {
     reviewBtn.disabled = false;
-    reviewBtn.textContent = isReview ? "Save blueprint" : "Review image";
+    reviewBtn.textContent = isReview ? "Build image" : "Review image";
     reviewBtn.classList.toggle("pf-m-secondary", !isReview);
     reviewBtn.classList.toggle("pf-m-primary", isReview);
   }
@@ -1651,19 +1696,64 @@ function setBuildImageWizardStep(stepId) {
   panels[stepId]?.scrollTo(0, 0);
 }
 
-function saveBuildImageBlueprint() {
-  const newName = $("#build-image-name")?.value.trim();
-  if (buildImageEditingId && newName && newName !== buildImageOriginalName) {
-    const img = state.images.find((i) => i.id === buildImageEditingId);
-    if (img) {
-      img.name = newName;
-      renderTable();
-    }
+function releaseToOs(releaseText) {
+  const match = releaseText.match(/RHEL\)\s*(\d+)/);
+  return match ? `RHEL ${match[1]}` : "RHEL 9";
+}
+
+function getPrimaryBuildTarget() {
+  const selected = getSelectedBuildTargetValues();
+  for (const value of BUILD_TARGET_PRIORITY) {
+    if (selected.has(value)) return BUILD_TARGET_TO_IMAGE_TARGET[value];
   }
+  return "AWS";
+}
+
+function getInstanceActionForTarget(target) {
+  if (target === "Bare metal" || target === "WSL") return "download";
+  return "launch";
+}
+
+function buildImageFromDialog() {
+  const name = $("#build-image-name")?.value.trim() || DEFAULT_BUILD_IMAGE_NAME;
+  const release = $("#build-image-release")?.selectedOptions[0]?.textContent?.trim() || "";
+  const architecture = $("#build-image-architecture")?.value || "x86_64";
+  const source = buildImageEditingId
+    ? state.images.find((i) => i.id === buildImageEditingId)
+    : null;
+
+  const target = getPrimaryBuildTarget();
+  const newImage = {
+    id: imageIdFromName(name),
+    name,
+    createdAt: Date.now(),
+    lastUpdated: "Just now",
+    os: releaseToOs(release),
+    target,
+    status: "pending",
+    favorited: source?.favorited ?? false,
+    instanceAction: getInstanceActionForTarget(target),
+  };
+
+  if (source?.buildInfo && ["AWS", "GCP", "Azure", "Oracle"].includes(target)) {
+    newImage.buildInfo = {
+      ...JSON.parse(JSON.stringify(source.buildInfo)),
+      architecture,
+    };
+  } else if (["AWS", "GCP", "Azure", "Oracle"].includes(target)) {
+    newImage.buildInfo = { architecture };
+  }
+
+  state.images.unshift(newImage);
+  state.page = 1;
+
+  const newImageId = newImage.id;
   buildImageEditingId = null;
   buildImageOriginalName = null;
-  showToast("Blueprint saved");
+
   closeModals();
+  startImageRebuild([newImageId]);
+  showToast(`${name} build started`);
 }
 
 function openBuildImageModal(imageId) {
@@ -1742,12 +1832,13 @@ function initBuildImageModal() {
     if (nextStep !== buildImageCurrentStep) setBuildImageWizardStep(nextStep);
   });
 
-  $("#build-image-btn-review")?.addEventListener("click", () => {
+  $("#build-image-btn-review")?.addEventListener("click", (e) => {
     if (buildImageCurrentStep !== "review") {
       setBuildImageWizardStep("review");
       return;
     }
-    saveBuildImageBlueprint();
+    e.stopPropagation();
+    buildImageFromDialog();
   });
 
   $("#build-image-btn-back")?.addEventListener("click", () => {
@@ -2093,7 +2184,7 @@ function init() {
     }
     if (
       !e.target.closest("#build-progress-popover") &&
-      !e.target.closest(".table-col-status-cell") &&
+      !e.target.closest("[data-build-progress]") &&
       !e.target.closest("[data-kebab-action='rebuild']") &&
       !e.target.closest("#btn-rebuild")
     ) {
@@ -2130,6 +2221,7 @@ function init() {
 
   initImportModal();
   initBuildImageModal();
+  bindBuildProgressClicks();
 
   const closeMenusOnScroll = () => {
     if (state.openKebab) closeAllMenus();

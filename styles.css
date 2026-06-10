@@ -1946,10 +1946,20 @@ html.pf-modal-open {
   gap: 0.375rem;
   max-width: 100%;
   min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
   font-size: 0.875rem;
   font-weight: 400;
   line-height: 1.25;
   color: #0066cc;
+  cursor: pointer;
+  text-align: start;
+}
+
+.table-build-status:hover {
+  text-decoration: underline;
 }
 
 .table-build-status > span {
