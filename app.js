@@ -1529,7 +1529,6 @@ function renderIsoCards(containerId, titles) {
 const DEFAULT_BUILD_IMAGE_NAME = "rhel-10-x86_64-20240604-1322";
 
 let buildImageEditingId = null;
-let buildImageOriginalName = null;
 let buildImageCurrentStep = "base";
 const buildImageVisitedSteps = new Set(["base"]);
 
@@ -1687,7 +1686,11 @@ function setBuildImageWizardStep(stepId) {
   if (nextBtn) nextBtn.disabled = !canGoNext;
   if (reviewBtn) {
     reviewBtn.disabled = false;
-    reviewBtn.textContent = isReview ? "Build image" : "Review image";
+    reviewBtn.textContent = isReview
+      ? buildImageEditingId
+        ? "Rebuild image"
+        : "Build image"
+      : "Review image";
     reviewBtn.classList.toggle("pf-m-secondary", !isReview);
     reviewBtn.classList.toggle("pf-m-primary", isReview);
   }
@@ -1714,46 +1717,60 @@ function getInstanceActionForTarget(target) {
   return "launch";
 }
 
-function buildImageFromDialog() {
+function applyBuildImageDetailsFromDialog(img) {
   const name = $("#build-image-name")?.value.trim() || DEFAULT_BUILD_IMAGE_NAME;
   const release = $("#build-image-release")?.selectedOptions[0]?.textContent?.trim() || "";
   const architecture = $("#build-image-architecture")?.value || "x86_64";
-  const source = buildImageEditingId
-    ? state.images.find((i) => i.id === buildImageEditingId)
-    : null;
-
   const target = getPrimaryBuildTarget();
-  const newImage = {
-    id: imageIdFromName(name),
-    name,
-    createdAt: Date.now(),
-    lastUpdated: "Just now",
-    os: releaseToOs(release),
-    target,
-    status: "pending",
-    favorited: source?.favorited ?? false,
-    instanceAction: getInstanceActionForTarget(target),
-  };
+  const previousBuildInfo = img.buildInfo;
 
-  if (source?.buildInfo && ["AWS", "GCP", "Azure", "Oracle"].includes(target)) {
-    newImage.buildInfo = {
-      ...JSON.parse(JSON.stringify(source.buildInfo)),
+  img.name = name;
+  img.os = releaseToOs(release);
+  img.target = target;
+  img.lastUpdated = "Just now";
+  img.instanceAction = getInstanceActionForTarget(target);
+
+  if (["AWS", "GCP", "Azure", "Oracle"].includes(target)) {
+    img.buildInfo = {
+      ...(previousBuildInfo ? JSON.parse(JSON.stringify(previousBuildInfo)) : {}),
       architecture,
     };
-  } else if (["AWS", "GCP", "Azure", "Oracle"].includes(target)) {
-    newImage.buildInfo = { architecture };
+  } else {
+    delete img.buildInfo;
   }
 
-  state.images.unshift(newImage);
-  state.page = 1;
+  return img;
+}
 
-  const newImageId = newImage.id;
+function buildImageFromDialog() {
+  const editingId = buildImageEditingId;
+  const existing = editingId ? state.images.find((i) => i.id === editingId) : null;
+  let imageId;
+  let imageName;
+
+  if (existing) {
+    applyBuildImageDetailsFromDialog(existing);
+    imageId = existing.id;
+    imageName = existing.name;
+  } else {
+    const newImage = {
+      id: imageIdFromName($("#build-image-name")?.value.trim() || DEFAULT_BUILD_IMAGE_NAME),
+      createdAt: Date.now(),
+      favorited: false,
+      status: "pending",
+    };
+    applyBuildImageDetailsFromDialog(newImage);
+    state.images.unshift(newImage);
+    state.page = 1;
+    imageId = newImage.id;
+    imageName = newImage.name;
+  }
+
   buildImageEditingId = null;
-  buildImageOriginalName = null;
 
   closeModals();
-  startImageRebuild([newImageId]);
-  showToast(`${name} build started`);
+  startImageRebuild([imageId]);
+  showToast(`${imageName} build started`);
 }
 
 function openBuildImageModal(imageId) {
@@ -1761,15 +1778,7 @@ function openBuildImageModal(imageId) {
   const img = imageId ? state.images.find((i) => i.id === imageId) : null;
   buildImageEditingId = imageId || null;
   if (nameInput) {
-    if (img) {
-      buildImageOriginalName = img.name ?? null;
-      nameInput.value = img.name ?? DEFAULT_BUILD_IMAGE_NAME;
-    } else {
-      buildImageOriginalName = null;
-      nameInput.value = DEFAULT_BUILD_IMAGE_NAME;
-    }
-  } else {
-    buildImageOriginalName = null;
+    nameInput.value = img?.name ?? DEFAULT_BUILD_IMAGE_NAME;
   }
   setBuildImageTargetsFromImage(img);
   buildImageVisitedSteps.clear();
