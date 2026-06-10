@@ -700,7 +700,7 @@ function completeAllBuilds() {
     img.status = "ready";
     delete img.statusBadgeText;
     delete img.buildPhaseIndex;
-    img.lastUpdated = "Just now";
+    setImageLastUpdatedNow(img);
   });
   state.buildAnchorId = null;
   hideBuildProgressPopover();
@@ -740,10 +740,11 @@ function startImageRebuild(imageIds) {
     img.status = "progress";
     delete img.statusBadgeText;
     img.buildPhaseIndex = 0;
-    img.lastUpdated = "Just now";
+    setImageLastUpdatedNow(img);
   });
 
   state.buildAnchorId = ids[0];
+  state.page = 1;
   renderTable();
   // Defer so the triggering click does not bubble to document and dismiss the popover.
   queueMicrotask(() => showBuildProgressPopover(state.buildAnchorId));
@@ -764,7 +765,13 @@ function renderInstanceCell(img) {
   return `<button type="button" class="pf-v6-c-button pf-m-link" data-download="${img.id}">Download image</button>`;
 }
 
-function getImageCreatedAt(img) {
+function setImageLastUpdatedNow(img) {
+  img.lastUpdated = "Just now";
+  img.lastUpdatedAt = Date.now();
+}
+
+function getImageSortTime(img) {
+  if (typeof img.lastUpdatedAt === "number") return img.lastUpdatedAt;
   if (typeof img.createdAt === "number") return img.createdAt;
   const parsed = Date.parse(img.lastUpdated);
   return Number.isNaN(parsed) ? 0 : parsed;
@@ -812,7 +819,7 @@ function getFilteredImages() {
     list = list.filter((img) => img.lastUpdated.includes("Aug") || img.lastUpdated.includes("2025"));
   }
 
-  list.sort((a, b) => getImageCreatedAt(b) - getImageCreatedAt(a));
+  list.sort((a, b) => getImageSortTime(b) - getImageSortTime(a));
 
   return list;
 }
@@ -1727,7 +1734,7 @@ function applyBuildImageDetailsFromDialog(img) {
   img.name = name;
   img.os = releaseToOs(release);
   img.target = target;
-  img.lastUpdated = "Just now";
+  setImageLastUpdatedNow(img);
   img.instanceAction = getInstanceActionForTarget(target);
 
   if (["AWS", "GCP", "Azure", "Oracle"].includes(target)) {
