@@ -1711,6 +1711,25 @@ function releaseToOs(releaseText) {
   return match ? `RHEL ${match[1]}` : "RHEL 9";
 }
 
+function setBuildImageReleaseFromImage(img) {
+  const select = $("#build-image-release");
+  if (!select) return;
+
+  const defaultIndex = 1; // RHEL 9
+  let selectedIndex = defaultIndex;
+
+  if (img?.os) {
+    const matchIndex = [...select.options].findIndex(
+      (opt) => releaseToOs(opt.textContent.trim()) === img.os
+    );
+    if (matchIndex >= 0) selectedIndex = matchIndex;
+  }
+
+  [...select.options].forEach((opt, index) => {
+    opt.selected = index === selectedIndex;
+  });
+}
+
 function getPrimaryBuildTarget() {
   const selected = getSelectedBuildTargetValues();
   for (const value of BUILD_TARGET_PRIORITY) {
@@ -1787,6 +1806,7 @@ function openBuildImageModal(imageId) {
   if (nameInput) {
     nameInput.value = img?.name ?? DEFAULT_BUILD_IMAGE_NAME;
   }
+  setBuildImageReleaseFromImage(img);
   setBuildImageTargetsFromImage(img);
   buildImageVisitedSteps.clear();
   buildImageVisitedSteps.add("base");
